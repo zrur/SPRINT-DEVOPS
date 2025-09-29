@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Motos</title>
+    <style>
+        body{margin:0;background:#0b1020;color:#e5e7eb;font-family:system-ui}
+        .container{max-width:1100px;margin:auto;padding:24px}
+        h2{margin-bottom:20px}
+        table{width:100%;border-collapse:collapse;background:#11182a;border-radius:12px;overflow:hidden}
+        th,td{padding:12px 16px;text-align:left}
+        th{background:#1e293b;color:#93c5fd}
+        tr:nth-child(even){background:#1e2537}
+        a.btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.9rem}
+        a.btn.edit{background:#3b82f6;color:white}
+        a.btn.del{background:#ef4444;color:white}
+        a.btn.new{background:#22c55e;color:white;margin-bottom:16px;display:inline-block}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Motos</h2>
+    <a th:href="@{/motos/novo}" class="btn new">+ Nova Moto</a>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Placa</th>
+            <th>Modelo</th>
+            <th>Beacon</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="moto : ${motos}">
+            <td th:text="${moto.placa}">ABC-1234</td>
+            <td th:text="${moto.modelo}">Honda</td>
+            <td th:text="${moto.beacon?.codigo}">B001</td>
+            <td>
+                <a th:href="@{/motos/{id}(id=${moto.id})}" class="btn edit">Ver</a>
+                <a th:href="@{/motos/editar/{id}(id=${moto.id})}" class="btn edit">Editar</a>
+                <form th:action="@{/motos/excluir/{id}(id=${moto.id})}" method="post" style="display:inline">
+                    <button type="submit" class="btn del">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

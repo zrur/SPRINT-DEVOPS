@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Beacons · Mottu</title>
+  <style>
+    :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
+    .container{max-width:1100px;margin:auto;padding:16px}
+    header{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
+    .btn{display:inline-block;background:var(--c1);color:#001827;padding:10px 12px;border-radius:10px;text-decoration:none;font-weight:700}
+    .btn.sec{background:#334155;color:#e5e7eb}
+    .card{background:var(--card);border-radius:16px;padding:18px;margin-top:10px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #243045;text-align:left}
+  </style>
+</head>
+<body>
+<main class="container">
+  <header>
+    <h2>Beacons</h2>
+    <div>
+      <a class="btn" th:href="@{/}">Home</a>
+      <a class="btn" th:href="@{/beacons/novo}">Novo Beacon</a>
+    </div>
+  </header>
+
+  <div class="card">
+    <table>
+      <thead><tr><th>Identificador</th><th>Ativo</th><th style="width:200px">Ações</th></tr></thead>
+      <tbody>
+      <tr th:each="b : ${beacons}">
+        <td th:text="${b.identificador}">BLE-0001</td>
+        <td th:text="${b.ativo ? 'Sim' : 'Não'}">Sim</td>
+        <td>
+          <a class="btn" th:href="@{|/beacons/editar/${b.id}|}">Editar</a>
+          <form th:action="@{|/beacons/excluir/${b.id}|}" method="post" style="display:inline">
+            <button class="btn sec" onclick="return confirm('Excluir este beacon?')">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

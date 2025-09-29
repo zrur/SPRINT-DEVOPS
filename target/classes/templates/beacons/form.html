@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title th:text="${beacon.id} != null ? 'Editar Beacon' : 'Novo Beacon'">Beacon</title>
+    <style>
+        :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb}
+        *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
+        .container{max-width:900px;margin:auto;padding:16px}
+        .card{background:var(--card);border-radius:16px;padding:22px;margin-top:16px}
+        label{display:block;margin-top:10px}
+        input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0e1627;color:#e5e7eb}
+        .grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+        .btn{background:var(--c1);color:#001827;border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
+        .btn.sec{background:#334155;color:#e5e7eb}
+        .right{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+        .err{color:#fca5a5;font-size:.9rem}
+    </style>
+</head>
+<body>
+<main class="container">
+    <h2 th:text="${beacon.id} != null ? 'Editar Beacon' : 'Novo Beacon'">Beacon</h2>
+    <div class="card">
+        <form th:action="${beacon.id} != null ? @{|/beacons/editar/${beacon.id}|} : @{/beacons/novo}"
+              th:object="${beacon}" method="post" class="grid">
+            <label>Identificador
+                <input th:field="*{identificador}" maxlength="64" required/>
+                <span class="err" th:if="${#fields.hasErrors('identificador')}" th:errors="*{identificador}">erro</span>
+            </label>
+            <label>Ativo
+                <select th:field="*{ativo}">
+                    <option th:value="true">Sim</option>
+                    <option th:value="false">Não</option>
+                </select>
+            </label>
+            <div class="right" style="grid-column:1/-1">
+                <a class="btn sec" th:href="@{/beacons}">Cancelar</a>
+                <button class="btn" type="submit">Salvar</button>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

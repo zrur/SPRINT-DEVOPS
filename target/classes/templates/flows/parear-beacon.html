@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Parear Beacon · Mottu</title>
+    <style>
+        :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb;--ok:#86efac;--err:#fca5a5}
+        *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
+        .container{max-width:900px;margin:auto;padding:16px}
+        .card{background:var(--card);border-radius:16px;padding:22px;margin-top:16px}
+        label{display:block;margin-top:10px}
+        select{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0e1627;color:#e5e7eb}
+        .btn{background:var(--c1);color:#001827;border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
+        .btn.sec{background:#334155;color:#e5e7eb}
+        .right{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+        .ok{color:var(--ok)}.error{color:var(--err)}
+    </style>
+</head>
+<body>
+<main class="container">
+    <h2>Parear Beacon à Moto</h2>
+    <div class="card">
+        <p class="ok" th:if="${ok}" th:text="${ok}"></p>
+        <p class="error" th:if="${erro}" th:text="${erro}"></p>
+
+        <form th:action="@{/flows/parear}" method="post">
+            <label>Moto
+                <select name="motoId" required>
+                    <option value="" disabled selected>Selecione</option>
+                    <option th:each="m : ${motos}" th:value="${m.id}" th:text="${m.placa + ' · ' + m.modelo}"></option>
+                </select>
+            </label>
+
+            <label>Beacon
+                <select name="beaconId" required>
+                    <option value="" disabled selected>Selecione</option>
+                    <option th:each="b : ${beacons}" th:value="${b.id}" th:text="${b.identificador}"></option>
+                </select>
+            </label>
+
+            <div class="right">
+                <a class="btn sec" th:href="@{/}">Cancelar</a>
+                <button class="btn" type="submit">Parear</button>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

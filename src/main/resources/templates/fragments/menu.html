@@ -1,0 +1,19 @@
+<nav class="container card" aria-label="Menu principal"
+     xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+    <a th:href="@{/}" th:classappend="${#httpServletRequest.requestURI=='/'?'active':''}">Home</a>
+    <a th:href="@{/motos}" th:classappend="${#httpServletRequest.requestURI.startsWith('/motos')?'active':''}">Motos</a>
+    <a th:href="@{/beacons}" th:classappend="${#httpServletRequest.requestURI.startsWith('/beacons')?'active':''}">Beacons</a>
+    <a th:href="@{/flows/parear}" th:classappend="${#httpServletRequest.requestURI.startsWith('/flows/parear')?'active':''}">Parear Beacon</a>
+    <a th:href="@{/flows/movimentar}" th:classappend="${#httpServletRequest.requestURI.startsWith('/flows/movimentar')?'active':''}">Entrada/Saída</a>
+
+    <span style="float:right">
+    <span sec:authorize="isAuthenticated()">
+      <b th:text="${#authentication.name}">user</b> ·
+      <a th:href="@{/logout}">Sair</a>
+    </span>
+    <span sec:authorize="!isAuthenticated()">
+      <a th:href="@{/login}">Entrar</a>
+    </span>
+  </span>
+</nav>
