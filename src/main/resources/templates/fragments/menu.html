@@ -1,38 +1,30 @@
-<!-- templates/fragments/menu.html -->
 <nav th:fragment="menu(active)"
      class="container card"
      aria-label="Menu principal"
      xmlns:th="http://www.thymeleaf.org"
      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
     <style>
-        nav a{color:#cbd5e1;text-decoration:none;margin-right:12px}
-        nav a.active, nav a:hover{color:#fff}
-        .card{background:#11182a;border-radius:14px;padding:16px;margin:16px 0}
+        .card{background:#11182a;border-radius:14px;padding:12px;margin:16px auto;text-align:center}
+        .links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+        .links a{color:#cbd5e1;text-decoration:none}
+        .links a.active, .links a:hover{color:#fff}
+        .user{margin-top:10px;font-size:.95rem}
     </style>
 
-    <!-- Agora TODAS as abas usam só o parâmetro "active" -->
-    <a th:href="@{/}"
-       th:classappend="${active}=='home' ? ' active' : ''">Home</a>
+    <div class="links">
+        <a th:href="@{/}" th:classappend="${active}=='home' ? ' active' : ''">Home</a>
+        <a th:href="@{/motos}" th:classappend="${active}=='motos' ? ' active' : ''">Motos</a>
+        <a th:href="@{/beacons}" th:classappend="${active}=='beacons' ? ' active' : ''">Beacons</a>
+        <a th:href="@{/flows/parear}" th:classappend="${active}=='parear' ? ' active' : ''">Parear Beacon</a>
+        <a th:href="@{/flows/movimentar}" th:classappend="${active}=='movimentar' ? ' active' : ''">Entrada/Saída</a>
+    </div>
 
-    <a th:href="@{/motos}"
-       th:classappend="${active}=='motos' ? ' active' : ''">Motos</a>
-
-    <a th:href="@{/beacons}"
-       th:classappend="${active}=='beacons' ? ' active' : ''">Beacons</a>
-
-    <a th:href="@{/flows/parear}"
-       th:classappend="${active}=='parear' ? ' active' : ''">Parear Beacon</a>
-
-    <a th:href="@{/flows/movimentar}"
-       th:classappend="${active}=='movimentar' ? ' active' : ''">Entrada/Saída</a>
-
-    <span style="float:right">
-    <span sec:authorize="isAuthenticated()">
-      <b th:text="${#authentication.name}">user</b> ·
-      <a th:href="@{/logout}">Sair</a>
-    </span>
-    <span sec:authorize="!isAuthenticated()">
-      <a th:href="@{/login}">Entrar</a>
-    </span>
-  </span>
+    <div class="user">
+        <span sec:authorize="isAuthenticated()">
+          <b th:text="${#authentication.name}">user</b> · <a th:href="@{/logout}">Sair</a>
+        </span>
+        <span sec:authorize="!isAuthenticated()">
+          <a th:href="@{/login}">Entrar</a>
+        </span>
+    </div>
 </nav>
