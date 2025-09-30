@@ -40,39 +40,29 @@
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
-        <!-- Thymeleaf (views) -->
+        <!-- Thymeleaf -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-
-        <!-- Thymeleaf + Spring Security dialect -->
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
 
-        <!-- Segurança (login/logout + perfis) -->
+        <!-- Segurança -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Flyway (migrations) -->
+        <!-- Flyway (mantemos desativado nas props por usar schema pronto) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
-        <!-- Se seu Flyway exigir driver Oracle dedicado, descomente e alinhe a versão
-        <dependency>
-          <groupId>org.flywaydb</groupId>
-          <artifactId>flyway-database-oracle</artifactId>
-          <version>10.17.0</version>
-        </dependency>
-        -->
 
-        <!-- Banco de dados -->
-        <!-- H2 apenas para dev/local (opcional) -->
+        <!-- H2 (dev local opcional) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

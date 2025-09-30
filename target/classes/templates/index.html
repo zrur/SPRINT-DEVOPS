@@ -5,47 +5,21 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title th:text="${pageTitle} ?: 'Mottu Tracking'">Mottu Tracking</title>
-
-    <!-- Estilo minimalista embutido só para a home -->
+    <title>Mottu Tracking</title>
     <style>
         :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb;--muted:#94a3b8}
         *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
         .container{max-width:1100px;margin:auto;padding:16px}
-        header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
-        header h1{margin:0;font-size:1.6rem}
-        nav a{color:#cbd5e1;text-decoration:none;margin-right:14px}
-        nav a:hover{color:#fff}
         .card{background:var(--card);border-radius:16px;padding:28px;margin-top:22px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
         .btn{display:inline-block;text-align:center;background:var(--c1);color:#001827;padding:16px 14px;border-radius:12px;text-decoration:none;font-weight:600}
-        .btn.sec{background:#334155;color:#e5e7eb}
-        .btn.outline{background:transparent;border:1px solid #334155;color:#e5e7eb}
-        .grid{display:grid;gap:16px}
-        .grid-cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-        footer{opacity:.75;padding:24px 0;text-align:center}
+        .btn.sec{background:#334155;color:#e5e7eb}.btn.outline{background:transparent;border:1px solid #334155;color:#e5e7eb}
+        .grid{display:grid;gap:16px}.grid-cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
     </style>
 </head>
 <body>
 
-<!-- Barra superior simples -->
-<header class="container">
-    <h1>Mottu – Tracking</h1>
-    <nav>
-        <a th:href="@{/}">Home</a>
-        <a th:href="@{/motos}">Motos</a>
-        <a th:href="@{/beacons}">Beacons</a>
-        <a th:href="@{/flows/parear}">Parear</a>
-        <a th:href="@{/flows/movimentar}">Entrada/Saída</a>
-        <span sec:authorize="isAuthenticated()">
-        · <b th:text="${#authentication.name}">user</b> · <a th:href="@{/logout}">Sair</a>
-      </span>
-        <span sec:authorize="!isAuthenticated()">
-        · <a th:href="@{/login}">Entrar</a>
-      </span>
-    </nav>
-</header>
+<div th:replace="fragments/header :: header('Mottu Tracking','home')"></div>
 
-<!-- Conteúdo -->
 <main class="container">
     <div class="card" style="text-align:center">
         <h2 style="margin:0 0 6px 0">Bem-vindo ao <span style="color:var(--c1)">Mottu Tracking</span></h2>
@@ -63,8 +37,6 @@
     </div>
 </main>
 
-<footer class="container">
-    <small>&copy; 2025 Mottu · FIAP · Sprint Java Advanced</small>
-</footer>
+<div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>

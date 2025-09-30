@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title th:text="${moto.id} != null ? 'Editar Moto' : 'Nova Moto'">Moto</title>
     <style>
         :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb}
@@ -9,7 +10,7 @@
         .container{max-width:900px;margin:auto;padding:16px}
         .card{background:var(--card);border-radius:16px;padding:22px;margin-top:16px}
         label{display:block;margin-top:10px}
-        input{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0e1627;color:#e5e7eb}
+        input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0e1627;color:#e5e7eb}
         .grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
         .btn{background:var(--c1);color:#001827;border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
         .btn.sec{background:#334155;color:#e5e7eb}
@@ -23,14 +24,28 @@
     <div class="card">
         <form th:action="${moto.id} != null ? @{|/motos/editar/${moto.id}|} : @{/motos/novo}"
               th:object="${moto}" method="post" class="grid">
+            <input type="hidden" th:field="*{id}"/>
+
             <label>Placa
                 <input th:field="*{placa}" maxlength="10" required/>
                 <span class="err" th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}">erro</span>
             </label>
-            <label>Modelo
-                <input th:field="*{modelo}" maxlength="60" required/>
-                <span class="err" th:if="${#fields.hasErrors('modelo')}" th:errors="*{modelo}">erro</span>
+
+            <label>Cliente
+                <select th:field="*{clienteId}">
+                    <option th:value="" disabled selected>Selecione</option>
+                    <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
+                </select>
             </label>
+
+            <label>Modelo
+                <select th:field="*{modeloMotoId}">
+                    <option th:value="" disabled selected>Selecione</option>
+                    <option th:each="m : ${modelos}" th:value="${m.id}"
+                            th:text="${m.nome + ' - ' + m.fabricante}"></option>
+                </select>
+            </label>
+
             <div class="right" style="grid-column:1/-1">
                 <a class="btn sec" th:href="@{/motos}">Cancelar</a>
                 <button class="btn" type="submit">Salvar</button>

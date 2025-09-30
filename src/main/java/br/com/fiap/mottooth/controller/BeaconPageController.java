@@ -21,36 +21,45 @@ public class BeaconPageController {
         this.beaconRepository = beaconRepository;
     }
 
+    // Lista
     @GetMapping
     public String list(Model model) {
         model.addAttribute("beacons", beaconRepository.findAll());
         return "beacons/list";
     }
 
+    // Novo (form)
     @GetMapping("/novo")
     public String novoForm(Model model) {
         model.addAttribute("beacon", new Beacon());
         return "beacons/form";
     }
 
+    // Novo (submit)
     @PostMapping("/novo")
     public String create(@Valid @ModelAttribute("beacon") Beacon beacon,
                          BindingResult br,
                          RedirectAttributes ra) {
         if (br.hasErrors()) return "beacons/form";
+        // PK deve ser gerada por SEQUENCE/trigger no Oracle ou @GeneratedValue(SEQUENCE) na entidade
         beaconRepository.save(beacon);
         ra.addFlashAttribute("ok", "Beacon criado!");
         return "redirect:/beacons";
     }
 
+    // Editar (form)
     @GetMapping("/editar/{id}")
     public String editarForm(@PathVariable Long id, Model model, RedirectAttributes ra) {
         Optional<Beacon> opt = beaconRepository.findById(id);
-        if (opt.isEmpty()) { ra.addFlashAttribute("erro","Beacon não encontrado."); return "redirect:/beacons"; }
+        if (opt.isEmpty()) {
+            ra.addFlashAttribute("erro", "Beacon não encontrado.");
+            return "redirect:/beacons";
+        }
         model.addAttribute("beacon", opt.get());
         return "beacons/form";
     }
 
+    // Editar (submit)
     @PostMapping("/editar/{id}")
     public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("beacon") Beacon beacon,
@@ -63,6 +72,7 @@ public class BeaconPageController {
         return "redirect:/beacons";
     }
 
+    // Excluir
     @PostMapping("/excluir/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         if (beaconRepository.existsById(id)) {

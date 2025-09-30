@@ -4,20 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "TB_REGISTRO_BATERIA")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "SEQ_REGISTRO_BATERIA",
+        sequenceName = "SEQ_REGISTRO_BATERIA", // certifique-se de criar essa sequence no Oracle
+        allocationSize = 1
+)
 public class RegistroBateria {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_REGISTRO_BATERIA")
     @Column(name = "ID_REGISTRO")
     private Long id;
 
@@ -32,4 +35,39 @@ public class RegistroBateria {
     @ManyToOne
     @JoinColumn(name = "ID_BEACON")
     private Beacon beacon;
+
+    // =========================
+    // Getters e Setters
+    // =========================
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getDataHora() {
+        return dataHora;
+    }
+
+    public void setDataHora(LocalDateTime dataHora) {
+        this.dataHora = dataHora;
+    }
+
+    public Integer getNivelBateria() {
+        return nivelBateria;
+    }
+
+    public void setNivelBateria(Integer nivelBateria) {
+        this.nivelBateria = nivelBateria;
+    }
+
+    public Beacon getBeacon() {
+        return beacon;
+    }
+
+    public void setBeacon(Beacon beacon) {
+        this.beacon = beacon;
+    }
 }

@@ -4,18 +4,21 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "TB_PATIO")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "SEQ_PATIO",
+        sequenceName = "SEQ_PATIO", // certifique-se de criar essa sequence no Oracle
+        allocationSize = 1
+)
 public class Patio {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PATIO")
     @Column(name = "ID_PATIO")
     private Long id;
 
@@ -28,6 +31,9 @@ public class Patio {
     @JoinColumn(name = "ID_LOGRADOURO")
     private Logradouro logradouro;
 
+    // =========================
+    // Getters e Setters
+    // =========================
     public Long getId() {
         return id;
     }
@@ -36,11 +42,11 @@ public class Patio {
         this.id = id;
     }
 
-    public @NotBlank(message = "O nome do pátio é obrigatório") @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres") String getNome() {
+    public String getNome() {
         return nome;
     }
 
-    public void setNome(@NotBlank(message = "O nome do pátio é obrigatório") @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres") String nome) {
+    public void setNome(String nome) {
         this.nome = nome;
     }
 

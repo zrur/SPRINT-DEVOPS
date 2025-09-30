@@ -12,12 +12,17 @@
         th{background:#1e293b;color:#93c5fd}
         tr:nth-child(even){background:#1e2537}
         a.btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.9rem}
-        a.btn.edit{background:#3b82f6;color:white}
-        a.btn.del{background:#ef4444;color:white}
-        a.btn.new{background:#22c55e;color:white;margin-bottom:16px;display:inline-block}
+        a.btn.edit{background:#3b82f6;color:#fff}
+        a.btn.del{background:#ef4444;color:#fff}
+        a.btn.new{background:#22c55e;color:#fff;margin-bottom:16px;display:inline-block}
+        form{display:inline}
     </style>
 </head>
 <body>
+
+<!-- ✅ header com aba 'motos' -->
+<div th:replace="fragments/header :: header('Mottu Tracking','motos')"></div>
+
 <div class="container">
     <h2>Motos</h2>
     <a th:href="@{/motos/novo}" class="btn new">+ Nova Moto</a>
@@ -26,26 +31,31 @@
         <thead>
         <tr>
             <th>Placa</th>
+            <th>Cliente</th>
             <th>Modelo</th>
-            <th>Beacon</th>
             <th>Ações</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="moto : ${motos}">
             <td th:text="${moto.placa}">ABC-1234</td>
-            <td th:text="${moto.modelo}">Honda</td>
-            <td th:text="${moto.beacon?.codigo}">B001</td>
+            <td th:text="${moto.cliente != null ? moto.cliente.nome : 'Sem cliente'}">João da Silva</td>
+            <td th:text="${moto.modeloMoto != null ? moto.modeloMoto.nome : 'Sem modelo'}">CG 160</td>
             <td>
-                <a th:href="@{/motos/{id}(id=${moto.id})}" class="btn edit">Ver</a>
                 <a th:href="@{/motos/editar/{id}(id=${moto.id})}" class="btn edit">Editar</a>
-                <form th:action="@{/motos/excluir/{id}(id=${moto.id})}" method="post" style="display:inline">
+                <form th:action="@{/motos/excluir/{id}(id=${moto.id})}" method="post">
                     <button type="submit" class="btn del">Excluir</button>
                 </form>
             </td>
         </tr>
+        <tr th:if="${#lists.isEmpty(motos)}">
+            <td colspan="4">Nenhuma moto cadastrada.</td>
+        </tr>
         </tbody>
     </table>
 </div>
+
+<!-- ✅ footer() -->
+<div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>

@@ -1,15 +1,14 @@
 package br.com.fiap.mottooth.config;
 
+import javax.sql.DataSource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -21,36 +20,53 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/css/**", "/js/**", "/img/**").permitAll()
-                        .requestMatchers("/swagger-ui.html","/swagger-ui/**","/api-docs/**","/v3/api-docs/**").permitAll()
-                        .requestMatchers("/motos/**","/beacons/**","/flows/**").hasAnyRole("ADMIN","OPERADOR")
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                        // página inicial (index)
+                        .requestMatchers("/", "/index").authenticated()
+                        // áreas restritas
+                        .requestMatchers("/motos/**", "/beacons/**", "/flows/**")
+                        .hasAnyAuthority("ROLE_ADMINISTRADOR", "ROLE_OPERADOR")
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.loginPage("/login").permitAll())
-                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login?logout"))
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        // após logar, cai no index
+                        .defaultSuccessUrl("/", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                )
                 .csrf(csrf -> csrf.disable());
+
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        // DEV: senhas em texto puro, trocar para BCrypt futuramente
+        return NoOpPasswordEncoder.getInstance();
     }
 
-    // USUÁRIOS EM MEMÓRIA PARA TESTE
-    // admin / operador  -> ROLE_ADMIN
-    // operador / operador -> ROLE_OPERADOR
     @Bean
-    public UserDetailsService users(PasswordEncoder encoder) {
-        UserDetails admin = User.withUsername("admin")
-                .password(encoder.encode("operador"))
-                .roles("ADMIN")
-                .build();
+    public JdbcUserDetailsManager users(DataSource dataSource) {
+        JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
 
-        UserDetails operador = User.withUsername("operador")
-                .password(encoder.encode("operador"))
-                .roles("OPERADOR")
-                .build();
+        manager.setUsersByUsernameQuery("""
+            SELECT EMAIL AS username, SENHA AS password, 1 AS enabled
+            FROM TB_USUARIO
+            WHERE EMAIL = ?
+        """);
 
-        return new InMemoryUserDetailsManager(admin, operador);
+        manager.setAuthoritiesByUsernameQuery("""
+            SELECT u.EMAIL AS username, 'ROLE_' || TRIM(UPPER(t.DESCRICAO)) AS authority
+            FROM TB_USUARIO u
+            JOIN TB_TIPO_USUARIO t ON t.ID_TIPO_USUARIO = u.ID_TIPO_USUARIO
+            WHERE u.EMAIL = ?
+        """);
+
+        manager.setEnableGroups(false);
+        return manager;
     }
 }

@@ -1,47 +1,61 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Beacons · Mottu</title>
+  <meta charset="UTF-8"/>
+  <title>Beacons</title>
   <style>
-    :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
-    .container{max-width:1100px;margin:auto;padding:16px}
-    header{display:flex;justify-content:space-between;align-items:center;margin:14px 0}
-    .btn{display:inline-block;background:var(--c1);color:#001827;padding:10px 12px;border-radius:10px;text-decoration:none;font-weight:700}
-    .btn.sec{background:#334155;color:#e5e7eb}
-    .card{background:var(--card);border-radius:16px;padding:18px;margin-top:10px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid #243045;text-align:left}
+    body{margin:0;background:#0b1020;color:#e5e7eb;font-family:system-ui}
+    .container{max-width:1100px;margin:auto;padding:24px}
+    h2{margin-bottom:20px}
+    table{width:100%;border-collapse:collapse;background:#11182a;border-radius:12px;overflow:hidden}
+    th,td{padding:12px 16px;text-align:left}
+    th{background:#1e293b;color:#93c5fd}
+    tr:nth-child(even){background:#1e2537}
+    a.btn,button.btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.9rem;border:none;cursor:pointer}
+    a.btn.edit{background:#3b82f6;color:#fff}
+    button.btn.del{background:#ef4444;color:#fff}
+    a.btn.new{background:#22c55e;color:#fff;margin-bottom:16px;display:inline-block}
+    form{display:inline}
   </style>
 </head>
 <body>
-<main class="container">
-  <header>
-    <h2>Beacons</h2>
-    <div>
-      <a class="btn" th:href="@{/}">Home</a>
-      <a class="btn" th:href="@{/beacons/novo}">Novo Beacon</a>
-    </div>
-  </header>
 
-  <div class="card">
-    <table>
-      <thead><tr><th>Identificador</th><th>Ativo</th><th style="width:200px">Ações</th></tr></thead>
-      <tbody>
-      <tr th:each="b : ${beacons}">
-        <td th:text="${b.identificador}">BLE-0001</td>
-        <td th:text="${b.ativo ? 'Sim' : 'Não'}">Sim</td>
-        <td>
-          <a class="btn" th:href="@{|/beacons/editar/${b.id}|}">Editar</a>
-          <form th:action="@{|/beacons/excluir/${b.id}|}" method="post" style="display:inline">
-            <button class="btn sec" onclick="return confirm('Excluir este beacon?')">Excluir</button>
-          </form>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-</main>
+<!-- ✅ header com aba 'beacons' -->
+<div th:replace="fragments/header :: header('Mottu Tracking','beacons')"></div>
+
+<div class="container">
+  <h2>Beacons</h2>
+  <a th:href="@{/beacons/novo}" class="btn new">+ Novo Beacon</a>
+
+  <table>
+    <thead>
+    <tr>
+      <th>UUID</th>
+      <th>Bateria (%)</th>
+      <th>Moto</th>
+      <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="b : ${beacons}">
+      <td th:text="${b.uuid}">uuid-001</td>
+      <td th:text="${b.bateria}">90</td>
+      <td th:text="${b.moto != null ? b.moto.placa : '—'}">ABC-1234</td>
+      <td>
+        <a th:href="@{/beacons/editar/{id}(id=${b.id})}" class="btn edit">Editar</a>
+        <form th:action="@{/beacons/excluir/{id}(id=${b.id})}" method="post">
+          <button type="submit" class="btn del">Excluir</button>
+        </form>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(beacons)}">
+      <td colspan="4">Nenhum beacon cadastrado.</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ✅ footer() -->
+<div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>

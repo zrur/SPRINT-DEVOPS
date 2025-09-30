@@ -1,11 +1,30 @@
-<nav class="container card" aria-label="Menu principal"
+<!-- templates/fragments/menu.html -->
+<nav th:fragment="menu(active)"
+     class="container card"
+     aria-label="Menu principal"
      xmlns:th="http://www.thymeleaf.org"
      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
-    <a th:href="@{/}" th:classappend="${#httpServletRequest.requestURI=='/'?'active':''}">Home</a>
-    <a th:href="@{/motos}" th:classappend="${#httpServletRequest.requestURI.startsWith('/motos')?'active':''}">Motos</a>
-    <a th:href="@{/beacons}" th:classappend="${#httpServletRequest.requestURI.startsWith('/beacons')?'active':''}">Beacons</a>
-    <a th:href="@{/flows/parear}" th:classappend="${#httpServletRequest.requestURI.startsWith('/flows/parear')?'active':''}">Parear Beacon</a>
-    <a th:href="@{/flows/movimentar}" th:classappend="${#httpServletRequest.requestURI.startsWith('/flows/movimentar')?'active':''}">Entrada/Saída</a>
+    <style>
+        nav a{color:#cbd5e1;text-decoration:none;margin-right:12px}
+        nav a.active, nav a:hover{color:#fff}
+        .card{background:#11182a;border-radius:14px;padding:16px;margin:16px 0}
+    </style>
+
+    <!-- Agora TODAS as abas usam só o parâmetro "active" -->
+    <a th:href="@{/}"
+       th:classappend="${active}=='home' ? ' active' : ''">Home</a>
+
+    <a th:href="@{/motos}"
+       th:classappend="${active}=='motos' ? ' active' : ''">Motos</a>
+
+    <a th:href="@{/beacons}"
+       th:classappend="${active}=='beacons' ? ' active' : ''">Beacons</a>
+
+    <a th:href="@{/flows/parear}"
+       th:classappend="${active}=='parear' ? ' active' : ''">Parear Beacon</a>
+
+    <a th:href="@{/flows/movimentar}"
+       th:classappend="${active}=='movimentar' ? ' active' : ''">Entrada/Saída</a>
 
     <span style="float:right">
     <span sec:authorize="isAuthenticated()">

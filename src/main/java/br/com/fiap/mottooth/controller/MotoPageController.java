@@ -16,9 +16,10 @@ public class MotoPageController {
         this.motoRepository = motoRepository;
     }
 
+    // Lista de motos renderizada no Thymeleaf (dados vêm do Oracle via JPA)
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("motos", motoRepository.findAll()); // agora busca no H2
-        return "motos/list";
+        model.addAttribute("motos", motoRepository.findAll());
+        return "motos/list"; // templates/motos/list.html
     }
 }

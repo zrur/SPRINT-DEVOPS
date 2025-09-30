@@ -4,18 +4,21 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "TB_MODELO_MOTO")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "SEQ_MODELO_MOTO",
+        sequenceName = "SEQ_MODELO_MOTO", // certifique-se de criar essa sequence no Oracle
+        allocationSize = 1
+)
 public class ModeloMoto {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_MODELO_MOTO")
     @Column(name = "ID_MODELO_MOTO")
     private Long id;
 
@@ -29,6 +32,9 @@ public class ModeloMoto {
     @Column(name = "FABRICANTE", length = 100, nullable = false)
     private String fabricante;
 
+    // =========================
+    // Getters e Setters
+    // =========================
     public Long getId() {
         return id;
     }
@@ -37,19 +43,19 @@ public class ModeloMoto {
         this.id = id;
     }
 
-    public @NotBlank(message = "O nome do modelo é obrigatório") @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres") String getNome() {
+    public String getNome() {
         return nome;
     }
 
-    public void setNome(@NotBlank(message = "O nome do modelo é obrigatório") @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres") String nome) {
+    public void setNome(String nome) {
         this.nome = nome;
     }
 
-    public @NotBlank(message = "O fabricante é obrigatório") @Size(max = 100, message = "O fabricante deve ter no máximo 100 caracteres") String getFabricante() {
+    public String getFabricante() {
         return fabricante;
     }
 
-    public void setFabricante(@NotBlank(message = "O fabricante é obrigatório") @Size(max = 100, message = "O fabricante deve ter no máximo 100 caracteres") String fabricante) {
+    public void setFabricante(String fabricante) {
         this.fabricante = fabricante;
     }
 }

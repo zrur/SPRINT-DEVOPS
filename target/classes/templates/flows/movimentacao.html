@@ -7,7 +7,7 @@
     :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb;--ok:#86efac}
     *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
     .container{max-width:900px;margin:auto;padding:16px}
-    .card{background:var(--card);border-radius:16px;padding:22px;margin-top:16px}
+    .card{background:#11182a;border-radius:16px;padding:22px;margin-top:16px}
     label{display:block;margin-top:10px}
     input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0e1627;color:#e5e7eb}
     .btn{background:var(--c1);color:#001827;border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
@@ -17,6 +17,9 @@
   </style>
 </head>
 <body>
+
+<div th:replace="fragments/header :: header('Mottu Tracking','movimentar')"></div>
+
 <main class="container">
   <h2>Entrada / Saída</h2>
   <div class="card">
@@ -25,7 +28,8 @@
       <label>Moto
         <select name="motoId" required>
           <option value="" disabled selected>Selecione</option>
-          <option th:each="m : ${motos}" th:value="${m.id}" th:text="${m.placa + ' · ' + m.modelo}"></option>
+          <option th:each="m : ${motos}" th:value="${m.id}"
+                  th:text="${m.placa + ' · ' + (m.modeloMoto != null ? m.modeloMoto.nome : 'Sem modelo')}"></option>
         </select>
       </label>
 
@@ -47,5 +51,7 @@
     </form>
   </div>
 </main>
+
+<div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>

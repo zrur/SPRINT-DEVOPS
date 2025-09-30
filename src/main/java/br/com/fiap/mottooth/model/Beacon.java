@@ -6,18 +6,21 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "TB_BEACON")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "SEQ_BEACON",
+        sequenceName = "SEQ_BEACON", // certifique-se de criar essa sequence no Oracle
+        allocationSize = 1
+)
 public class Beacon {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_BEACON")
     @Column(name = "ID_BEACON")
     private Long id;
 
@@ -32,13 +35,16 @@ public class Beacon {
     private Integer bateria;
 
     @OneToOne
-    @JoinColumn(name = "ID_MOTO")
+    @JoinColumn(name = "ID_MOTO", unique = true) // garante relação 1–1 no banco
     private Moto moto;
 
     @ManyToOne
     @JoinColumn(name = "ID_MODELO_BEACON")
     private ModeloBeacon modeloBeacon;
 
+    // =========================
+    // Getters e Setters
+    // =========================
     public Long getId() {
         return id;
     }
@@ -47,19 +53,19 @@ public class Beacon {
         this.id = id;
     }
 
-    public @NotBlank(message = "O UUID do beacon é obrigatório") @Size(max = 100, message = "O UUID deve ter no máximo 100 caracteres") String getUuid() {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(@NotBlank(message = "O UUID do beacon é obrigatório") @Size(max = 100, message = "O UUID deve ter no máximo 100 caracteres") String uuid) {
+    public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 
-    public @Min(value = 0, message = "O nível de bateria deve ser no mínimo 0") @Max(value = 100, message = "O nível de bateria deve ser no máximo 100") Integer getBateria() {
+    public Integer getBateria() {
         return bateria;
     }
 
-    public void setBateria(@Min(value = 0, message = "O nível de bateria deve ser no mínimo 0") @Max(value = 100, message = "O nível de bateria deve ser no máximo 100") Integer bateria) {
+    public void setBateria(Integer bateria) {
         this.bateria = bateria;
     }
 

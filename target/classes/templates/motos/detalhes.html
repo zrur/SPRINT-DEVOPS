@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>Detalhes da Moto</title>
     <style>
         :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb}
         *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
         .container{max-width:1100px;margin:auto;padding:16px}
         .card{background:var(--card);border-radius:16px;padding:22px;margin-top:16px}
-        table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #243045;text-align:left}
         .btn{display:inline-block;background:var(--c1);color:#001827;padding:10px 12px;border-radius:10px;text-decoration:none;font-weight:700}
         .btn.sec{background:#334155;color:#e5e7eb}
     </style>
@@ -18,23 +18,13 @@
     <h2>Detalhes da Moto</h2>
     <div class="card">
         <p><b>Placa:</b> <span th:text="${moto.placa}">ABC1D23</span></p>
-        <p><b>Modelo:</b> <span th:text="${moto.modelo}">CG 160</span></p>
-        <p><b>Beacon:</b> <span th:text="${moto.beacon != null ? moto.beacon.identificador : '-'}">BLE-0001</span></p>
+        <p><b>Cliente:</b> <span th:text="${moto.nomeCliente}">João</span></p>
+        <p><b>Modelo:</b> <span th:text="${moto.modeloNome}">CG 160</span></p>
+        <p><b>Fabricante:</b> <span th:text="${moto.fabricante}">Honda</span></p>
     </div>
 
     <div class="card">
-        <h3>Histórico de Movimentações</h3>
-        <table>
-            <thead><tr><th>Tipo</th><th>Pátio</th><th>Data/Hora</th></tr></thead>
-            <tbody>
-            <tr th:each="mv : ${movs}">
-                <td th:text="${mv.tipo}">ENTRADA</td>
-                <td th:text="${mv.patio}">Pátio A</td>
-                <td th:text="${#temporals.format(mv.dataHora,'dd/MM/yyyy HH:mm')}">01/01/2025 09:00</td>
-            </tr>
-            </tbody>
-        </table>
-        <a class="btn sec" th:href="@{/motos}" style="margin-top:10px;display:inline-block">Voltar</a>
+        <a class="btn sec" th:href="@{/motos}">Voltar</a>
     </div>
 </main>
 </body>

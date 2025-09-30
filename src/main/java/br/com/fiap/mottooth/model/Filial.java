@@ -4,20 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
 @Table(name = "TB_FILIAL")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "SEQ_FILIAL",
+        sequenceName = "SEQ_FILIAL", // certifique-se de criar essa sequence no Oracle
+        allocationSize = 1
+)
 public class Filial {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_FILIAL")
     @Column(name = "ID_FILIAL")
     private Long id;
 
@@ -32,4 +35,39 @@ public class Filial {
 
     @OneToMany(mappedBy = "filial")
     private List<Departamento> departamentos;
+
+    // =========================
+    // Getters e Setters
+    // =========================
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public Patio getPatio() {
+        return patio;
+    }
+
+    public void setPatio(Patio patio) {
+        this.patio = patio;
+    }
+
+    public List<Departamento> getDepartamentos() {
+        return departamentos;
+    }
+
+    public void setDepartamentos(List<Departamento> departamentos) {
+        this.departamentos = departamentos;
+    }
 }

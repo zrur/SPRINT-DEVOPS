@@ -5,20 +5,23 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "TB_CLIENTE")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@SequenceGenerator(
+        name = "SEQ_CLIENTE",
+        sequenceName = "SEQ_CLIENTE", // certifique-se de criar essa sequence no Oracle
+        allocationSize = 1
+)
 public class Cliente {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_CLIENTE")
     @Column(name = "ID_CLIENTE")
     private Long id;
 
@@ -42,6 +45,9 @@ public class Cliente {
     @Column(name = "TELEFONE", length = 20)
     private String telefone;
 
+    // =========================
+    // Getters e Setters
+    // =========================
     public Long getId() {
         return id;
     }
@@ -50,19 +56,19 @@ public class Cliente {
         this.id = id;
     }
 
-    public @NotBlank(message = "O nome é obrigatório") @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres") String getNome() {
+    public String getNome() {
         return nome;
     }
 
-    public void setNome(@NotBlank(message = "O nome é obrigatório") @Size(max = 100, message = "O nome deve ter no máximo 100 caracteres") String nome) {
+    public void setNome(String nome) {
         this.nome = nome;
     }
 
-    public @NotBlank(message = "O CPF é obrigatório") @Size(min = 11, max = 14, message = "O CPF deve ter entre 11 e 14 caracteres") @Pattern(regexp = "[0-9.\\-]+", message = "O CPF deve conter apenas números, pontos e traços") String getCpf() {
+    public String getCpf() {
         return cpf;
     }
 
-    public void setCpf(@NotBlank(message = "O CPF é obrigatório") @Size(min = 11, max = 14, message = "O CPF deve ter entre 11 e 14 caracteres") @Pattern(regexp = "[0-9.\\-]+", message = "O CPF deve conter apenas números, pontos e traços") String cpf) {
+    public void setCpf(String cpf) {
         this.cpf = cpf;
     }
 
