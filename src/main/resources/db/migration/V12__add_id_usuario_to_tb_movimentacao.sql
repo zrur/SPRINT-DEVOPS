@@ -1,0 +1,8 @@
+-- Adiciona a coluna (permite null)
+ALTER TABLE TB_MOVIMENTACAO ADD (ID_USUARIO NUMBER);
+
+-- (Opcional) Cria a FK se a tabela TB_USUARIO existir
+ALTER TABLE TB_MOVIMENTACAO
+    ADD CONSTRAINT FK_MOV_USUARIO
+        FOREIGN KEY (ID_USUARIO)
+            REFERENCES TB_USUARIO (ID_USUARIO);

@@ -2,8 +2,12 @@ package br.com.fiap.mottooth.controller;
 
 import br.com.fiap.mottooth.model.Beacon;
 import br.com.fiap.mottooth.model.Moto;
+import br.com.fiap.mottooth.model.Movimentacao;
+import br.com.fiap.mottooth.model.TipoMovimentacao;
 import br.com.fiap.mottooth.repository.BeaconRepository;
 import br.com.fiap.mottooth.repository.MotoRepository;
+import br.com.fiap.mottooth.repository.MovimentacaoRepository;
+import br.com.fiap.mottooth.repository.TipoMovimentacaoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -11,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,10 +25,17 @@ public class FlowPageController {
 
     private final MotoRepository motoRepository;
     private final BeaconRepository beaconRepository;
+    private final MovimentacaoRepository movimentacaoRepository;
+    private final TipoMovimentacaoRepository tipoMovimentacaoRepository;
 
-    public FlowPageController(MotoRepository motoRepository, BeaconRepository beaconRepository) {
+    public FlowPageController(MotoRepository motoRepository,
+                              BeaconRepository beaconRepository,
+                              MovimentacaoRepository movimentacaoRepository,
+                              TipoMovimentacaoRepository tipoMovimentacaoRepository) {
         this.motoRepository = motoRepository;
         this.beaconRepository = beaconRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
+        this.tipoMovimentacaoRepository = tipoMovimentacaoRepository;
     }
 
     /* ---------- PAREAR ---------- */
@@ -75,7 +87,7 @@ public class FlowPageController {
         return "redirect:/flows/parear";
     }
 
-    /* ---------- MOVIMENTAR ---------- */
+    /* ---------- MOVIMENTAR (ENTRADA/SAÍDA) ---------- */
 
     @GetMapping("/movimentar")
     public String movimentarPage(Model model) {
@@ -85,21 +97,72 @@ public class FlowPageController {
     }
 
     @PostMapping("/movimentar")
+    @Transactional
     public String movimentar(@RequestParam Long motoId,
-                             @RequestParam String tipo,
+                             @RequestParam String tipo,   // ENTRADA / SAIDA
                              @RequestParam String patio,
                              RedirectAttributes ra) {
 
+        // Valida moto
         Optional<Moto> motoOpt = motoRepository.findById(motoId);
         if (motoOpt.isEmpty()) {
             ra.addFlashAttribute("erro", "Moto não encontrada.");
             return "redirect:/flows/movimentar";
         }
+        Moto moto = motoOpt.get();
 
-        // TODO: persistir movimentação (se houver tabela/entidade)
+        // Normaliza e valida o tipo
+        String tipoDesc = (tipo == null ? "" : tipo).trim().toUpperCase();
+        if (!(tipoDesc.equals("ENTRADA") || tipoDesc.equals("SAIDA") || tipoDesc.equals("SAÍDA"))) {
+            ra.addFlashAttribute("erro", "Tipo inválido. Use ENTRADA ou SAÍDA.");
+            return "redirect:/flows/movimentar";
+        }
+        // Normaliza SAÍDA -> SAIDA (sem acento), caso venha com acento
+        if (tipoDesc.equals("SAÍDA")) tipoDesc = "SAIDA";
+
+        // Normaliza e valida o pátio
+        String patioFinal = (patio == null ? "" : patio).trim();
+        if (patioFinal.isEmpty()) {
+            ra.addFlashAttribute("erro", "Informe o pátio.");
+            return "redirect:/flows/movimentar";
+        }
+
+        // Busca (ou cria) o tipo ENTRADA/SAIDA
+        TipoMovimentacao tipoEnt = tipoMovimentacaoRepository.findByDescricao(tipoDesc);
+        if (tipoEnt == null) {
+            tipoEnt = new TipoMovimentacao();
+            tipoEnt.setDescricao(tipoDesc);
+            tipoEnt = tipoMovimentacaoRepository.save(tipoEnt);
+        }
+
+        // BLOQUEIO: não permitir o mesmo movimento consecutivo para a mesma moto
+        Optional<Movimentacao> ultimaOpt =
+                movimentacaoRepository.findTopByMoto_IdOrderByDataMovimentacaoDesc(motoId);
+
+        if (ultimaOpt.isPresent()
+                && ultimaOpt.get().getTipoMovimentacao() != null
+                && ultimaOpt.get().getTipoMovimentacao().getId().equals(tipoEnt.getId())) {
+            ra.addFlashAttribute("erro",
+                    "Já existe uma " + tipoDesc +
+                            " registrada por último para a moto " + moto.getPlaca() +
+                            ". Registre o movimento oposto antes.");
+            return "redirect:/flows/movimentar";
+        }
+
+        // Persiste a movimentação
+        Movimentacao mv = new Movimentacao();
+        mv.setMoto(moto);
+        mv.setTipoMovimentacao(tipoEnt);
+        mv.setObservacao("Pátio: " + patioFinal);
+        mv.setDataMovimentacao(LocalDateTime.now());
+        // Se você tiver usuário logado no futuro:
+        // mv.setUsuario(usuarioLogado);
+
+        movimentacaoRepository.save(mv);
+
         ra.addFlashAttribute("ok",
-                "Movimentação registrada: " + tipo + " no " + patio +
-                        " para a moto " + motoOpt.get().getPlaca() + ".");
+                "Movimentação registrada: " + tipoDesc +
+                        " no " + patioFinal + " (moto " + moto.getPlaca() + ").");
         return "redirect:/flows/movimentar";
     }
 }

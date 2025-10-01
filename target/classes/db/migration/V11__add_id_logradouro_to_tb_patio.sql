@@ -1,0 +1,63 @@
+-- V11__add_id_logradouro_to_tb_patio.sql
+-- Adiciona a coluna ID_LOGRADOURO na TB_PATIO (nullable) e cria FK/índice se não existirem.
+
+DECLARE
+v_col_cnt INTEGER;
+BEGIN
+  -- Adiciona a coluna se ainda não existir
+SELECT COUNT(*)
+INTO v_col_cnt
+FROM ALL_TAB_COLUMNS
+WHERE OWNER = USER
+  AND TABLE_NAME = 'TB_PATIO'
+  AND COLUMN_NAME = 'ID_LOGRADOURO';
+
+IF v_col_cnt = 0 THEN
+    EXECUTE IMMEDIATE 'ALTER TABLE TB_PATIO ADD (ID_LOGRADOURO NUMBER(19))';
+END IF;
+END;
+/
+-- Índice (melhora joins/buscas pela FK)
+DECLARE
+v_idx_cnt INTEGER;
+BEGIN
+SELECT COUNT(*)
+INTO v_idx_cnt
+FROM ALL_INDEXES
+WHERE OWNER = USER
+  AND INDEX_NAME = 'IDX_PATIO_LOGRADOURO';
+
+IF v_idx_cnt = 0 THEN
+    EXECUTE IMMEDIATE 'CREATE INDEX IDX_PATIO_LOGRADOURO ON TB_PATIO (ID_LOGRADOURO)';
+END IF;
+END;
+/
+-- FK (só cria se não existir e se a tabela de referência existir)
+DECLARE
+v_fk_cnt INTEGER;
+  v_ref_tbl_cnt INTEGER;
+BEGIN
+SELECT COUNT(*)
+INTO v_ref_tbl_cnt
+FROM ALL_TABLES
+WHERE OWNER = USER AND TABLE_NAME = 'TB_LOGRADOURO';
+
+IF v_ref_tbl_cnt > 0 THEN
+SELECT COUNT(*)
+INTO v_fk_cnt
+FROM ALL_CONSTRAINTS
+WHERE OWNER = USER
+  AND CONSTRAINT_NAME = 'FK_PATIO_LOGRADOURO';
+
+IF v_fk_cnt = 0 THEN
+      EXECUTE IMMEDIATE '
+        ALTER TABLE TB_PATIO
+        ADD CONSTRAINT FK_PATIO_LOGRADOURO
+        FOREIGN KEY (ID_LOGRADOURO)
+        REFERENCES TB_LOGRADOURO (ID_LOGRADOURO)
+      ';
+END IF;
+END IF;
+END;
+/
+COMMIT;
