@@ -1,113 +1,166 @@
-# Mottooth API
+# 🏍️ Mottooth Tracking
 
-Sistema inteligente de localização utilizando beacons Bluetooth Low Energy (BLE) para rastreamento de motocicletas em pátios.
+Sistema inteligente para **rastreamento e gerenciamento de motocicletas** em pátios, utilizando **beacons Bluetooth Low Energy (BLE)**.  
+Desenvolvido como parte da disciplina **Java Advanced – 3ª Sprint (FIAP)**.
 
-## Descrição do Projeto
+---
 
-O Mottooth é uma solução desenvolvida para a empresa Mottu, que permite o rastreamento preciso de motocicletas em pátios utilizando beacons Bluetooth. O sistema registra a localização das motos, monitora o nível de bateria dos beacons e gerencia as movimentações das motocicletas.
+## 📸 Demonstração do Sistema (UI com Thymeleaf)
 
-## Tecnologias Utilizadas
+### 🔹 Login
+![Login](./src/main/docs/screens/login.png)
 
-- Java 17
-- Spring Boot 3.2.3
-- Spring Data JPA
-- Spring Web
-- Spring Validation
-- Spring Cache
-- H2 Database (desenvolvimento)
-- Oracle Database (produção)
-- Lombok
-- Swagger/OpenAPI
+### 🔹 Página Inicial
+![Home](./src/main/docs/screens/index.png)
 
-## Requisitos
+### 🔹 Listagem de Motos
+![Motos](./src/main/docs/screens/listagensMotos.png)
 
-- Java 17 ou superior
-- Maven 3.6 ou superior
-- Oracle Database (opcional, para produção)
+### 🔹 Listagem de Beacons
+![Motos](./src/main/docs/screens/listagensMotos.png)
 
-## Como Executar
+### 🔹 Pareamento de Moto ↔ Beacon
+![Parear](./src/main/docs/screens/Parear.png)
+
+### 🔹 Registro de Entrada/Saída
+![Movimentação](./src/main/docs/screens/entradaSaida.png)
+---
+
+## ⚙️ Tecnologias Utilizadas
+
+- **Java 17**
+- **Spring Boot 3.2.3**
+- **Spring Data JPA**
+- **Spring Web (REST + Thymeleaf)**
+- **Thymeleaf** (frontend)
+- **Spring Security** (login, logout e controle de acesso)
+- **Spring Validation**
+- **Flyway** (versionamento do banco)
+- **Oracle Database** (produção)
+- **Lombok**
+- **Swagger / OpenAPI**
+
+---
+
+## 📂 Estrutura do Projeto
+
+```bash
+mottooth-java/
+│── src/main/java/br/com/fiap/mottooth
+│   ├── config/            # Configurações (cache, segurança, swagger, etc.)
+│   ├── controller/        # Controladores REST + Thymeleaf (Auth, Moto, Beacon, Flow, etc.)
+│   ├── dto/               # Objetos de transferência de dados (DTOs)
+│   ├── exception/         # Tratamento centralizado de erros
+│   ├── model/             # Entidades JPA (Moto, Beacon, Usuario, Movimentacao, etc.)
+│   ├── repository/        # Repositórios Spring Data JPA
+│   ├── service/           # Regras de negócio e serviços
+│   └── MottoothApplication.java  # Classe principal
+│
+│── src/main/resources
+│   ├── db/migration/      # Scripts Flyway de versionamento
+│   ├── templates/         # Telas Thymeleaf (HTML)
+│   │   ├── motos/         # CRUD de motos
+│   │   ├── beacons/       # CRUD de beacons
+│   │   ├── flows/         # Parear beacon e movimentações
+│   │   └── fragments/     # Header, footer e menu
+│   └── application.properties
+│
+├── docs/screens/          # 📸 Imagens de demonstração usadas no README
+├── pom.xml
+└── README.md
+```
+
+---
+
+## 📜 Recursos Implementados
+
+- **CRUD de Motos** → Gerenciamento completo da frota.
+- **CRUD de Beacons** → Cadastro, edição e remoção de dispositivos BLE.
+- **CRUD de Localizações** → Registro histórico da posição das motos.
+- **Pareamento 1:1 Moto ↔ Beacon** → Associação exclusiva e validada.
+- **Registro de Movimentações (Entrada/Saída)** → Histórico detalhado com validação de duplicatas.
+- **Validação de Campos** → Bean Validation para consistência dos dados.
+- **Paginação e Ordenação** → Consultas em lotes, ordenadas.
+- **Busca por Parâmetros** → ID, placa, UUID e intervalos de tempo.
+- **Cache de Requisições** → Otimização de consultas frequentes.
+- **Tratamento Centralizado de Erros** → Respostas padronizadas de erro.
+- **DTOs** → Separação de entidades do banco e transferência de dados.
+- **Swagger / OpenAPI** → Documentação e testes via navegador.
+- **Spring Security** → Autenticação, login/logout e controle por papéis.
+- **Flyway** → Versionamento de tabelas e dados no banco Oracle.
+
+---
+
+## 🔗 Endpoints da API
+
+### 🚗 Motos
+- `GET /api/motos` → Lista todas as motos
+- `GET /api/motos/{id}` → Busca moto pelo ID
+- `GET /api/motos/placa/{placa}` → Busca moto pela placa
+- `POST /api/motos` → Cadastra nova moto
+- `PUT /api/motos/{id}` → Atualiza moto existente
+- `DELETE /api/motos/{id}` → Remove moto
+
+### 📡 Beacons
+- `GET /api/beacons` → Lista todos os beacons
+- `GET /api/beacons/{id}` → Busca beacon pelo ID
+- `GET /api/beacons/uuid/{uuid}` → Busca beacon pelo UUID
+- `POST /api/beacons` → Cadastra novo beacon
+- `PUT /api/beacons/{id}` → Atualiza beacon existente
+- `DELETE /api/beacons/{id}` → Remove beacon
+
+### 📍 Localizações
+- `GET /api/localizacoes` → Lista todas as localizações
+- `GET /api/localizacoes/{id}` → Busca localização pelo ID
+- `GET /api/localizacoes/moto/{motoId}/ultima` → Última localização de uma moto
+- `POST /api/localizacoes` → Registra nova localização
+- `PUT /api/localizacoes/{id}` → Atualiza localização existente
+- `DELETE /api/localizacoes/{id}` → Remove localização
+
+---
+
+## ▶️ Como Executar o Projeto
 
 1. Clone o repositório:
-git clone https://github.com/seu-usuario/mottooth.git
-cd mottooth
+   ```bash
+   git clone https://github.com/seu-usuario/mottooth-java.git
+   cd mottooth-java
+   ```
 
-2. Compile e execute o projeto:
-mvn spring-boot:run
+2. Configure o banco Oracle no `application.properties`:
+   ```properties
+   spring.datasource.url=jdbc:oracle:thin:@localhost:1521:xe
+   spring.datasource.username=mottooth
+   spring.datasource.password=senha
+   spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
+   ```
 
-3. Acesse a aplicação:
-   - API: http://localhost:8080/api
-   - Swagger UI: http://localhost:8080/swagger-ui.html
-   - H2 Console: http://localhost:8080/h2-console (JDBC URL: jdbc:h2:mem:mottooth, Username: sa, Password: password)
+3. Rode as migrações com Flyway automaticamente ao iniciar o projeto.
 
-## Configuração do Banco de Dados
+4. Compile e rode a aplicação:
+   ```bash
+   mvn spring-boot:run
+   ```
 
-### H2 (Desenvolvimento)
-O projeto está configurado para usar o H2 Database em memória por padrão. Não é necessária nenhuma configuração adicional.
+5. Acesse no navegador:
+    - **UI (Thymeleaf):** [http://localhost:8080](http://localhost:8080)
+    - **Swagger API Docs:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
-### Oracle (Produção)
-Para usar o Oracle Database, descomente as configurações no arquivo `application.properties` e ajuste as credenciais conforme necessário:
+---
 
-spring.datasource.url=jdbc:oracle:thin:@localhost:1521:xe
-spring.datasource.username=mottooth
-spring.datasource.password=mottooth
-spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
-spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
+## 🧪 Como Testar
 
-## Estrutura do Projeto
+- **Testar CRUD via UI (Thymeleaf)** → Cadastrar, editar e excluir motos/beacons.
+- **Testar API (Swagger ou Postman)** → Executar chamadas REST listadas acima.
+- **Autenticação (Spring Security)** → Login/logout, com papéis diferentes de usuário.
+- **Validações** → Tentar inserir dados inválidos (placa duplicada, beacon repetido).
+- **Movimentações** → Registrar entrada/saída e verificar histórico.
+- **Flyway** → Conferir se as tabelas foram criadas e versionadas no Oracle.
 
-- `src/main/java/br/com/fiap/mottooth/`
-  - `controller/`: Controladores REST
-  - `service/`: Camada de serviço
-  - `repository/`: Interfaces de repositório JPA
-  - `model/`: Entidades JPA
-  - `dto/`: Objetos de transferência de dados
-  - `exception/`: Tratamento de exceções
-  - `config/`: Configurações do Spring
+---
 
-## Endpoints da API
+## 👥 Equipe
 
-### Motos
-
-- `GET /api/motos`: Lista todas as motos (suporta paginação e filtros)
-- `GET /api/motos/{id}`: Busca uma moto pelo ID
-- `GET /api/motos/placa/{placa}`: Busca uma moto pela placa
-- `POST /api/motos`: Cadastra uma nova moto
-- `PUT /api/motos/{id}`: Atualiza uma moto existente
-- `DELETE /api/motos/{id}`: Remove uma moto
-
-### Beacons
-
-- `GET /api/beacons`: Lista todos os beacons (suporta paginação e filtros)
-- `GET /api/beacons/{id}`: Busca um beacon pelo ID
-- `GET /api/beacons/uuid/{uuid}`: Busca um beacon pelo UUID
-- `POST /api/beacons`: Cadastra um novo beacon
-- `PUT /api/beacons/{id}`: Atualiza um beacon existente
-- `DELETE /api/beacons/{id}`: Remove um beacon
-
-### Localizações
-
-- `GET /api/localizacoes`: Lista todas as localizações (suporta paginação e filtros)
-- `GET /api/localizacoes/{id}`: Busca uma localização pelo ID
-- `GET /api/localizacoes/moto/{motoId}/ultima`: Busca a última localização de uma moto
-- `POST /api/localizacoes`: Cadastra uma nova localização
-- `PUT /api/localizacoes/{id}`: Atualiza uma localização existente
-- `DELETE /api/localizacoes/{id}`: Remove uma localização
-
-## Recursos Implementados
-
-- CRUD completo para as entidades Moto, Beacon e Localização
-- Relacionamentos entre entidades
-- Validação de campos com Bean Validation
-- Paginação e ordenação de resultados
-- Busca por parâmetros
-- Cache para otimização de requisições
-- Tratamento centralizado de erros
-- Utilização de DTOs
-- Documentação da API com Swagger/OpenAPI
-- Suporte a Oracle Database para ambiente de produção
-
-## Equipe
-
-- Arthur Ramos dos Santos – RM558798
-- Felipe Melo de Sousa – RM556099
-- Robert Daniel da Silva Coimbra – RM555881
+- **Arthur Ramos dos Santos** – RM558798
+- **Felipe Melo de Sousa** – RM556099
+- **Robert Daniel da Silva Coimbra** – RM555881  
