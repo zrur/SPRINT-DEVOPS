@@ -3,8 +3,7 @@ package br.com.fiap.mottooth.repository;
 import br.com.fiap.mottooth.model.Moto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -12,23 +11,32 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MotoRepository extends JpaRepository<Moto, Long> {
+public interface MotoRepository extends JpaRepository<Moto, Long>, JpaSpecificationExecutor<Moto> {
 
     /* ======= Unicidade / buscas simples ======= */
 
+    @EntityGraph(attributePaths = {"cliente", "modeloMoto"})
     Optional<Moto> findByPlacaIgnoreCase(String placa);
 
     boolean existsByPlacaIgnoreCase(String placa);
 
     boolean existsByPlacaIgnoreCaseAndIdNot(String placa, Long id);
 
+    /* ======= Paginadas com relações carregadas ======= */
+
+    @EntityGraph(attributePaths = {"cliente", "modeloMoto"})
+    Page<Moto> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"cliente", "modeloMoto"})
     Page<Moto> findByPlacaContaining(String placa, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"cliente", "modeloMoto"})
     Page<Moto> findByClienteId(Long clienteId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"cliente", "modeloMoto"})
     Page<Moto> findByModeloMotoId(Long modeloMotoId, Pageable pageable);
 
-    /* ======= Consultas com join ======= */
+    /* ======= Consultas com join (lista) ======= */
 
     /** Lista motos com cliente e modelo já carregados, sem duplicar IDs. */
     @Query("""
@@ -49,7 +57,7 @@ public interface MotoRepository extends JpaRepository<Moto, Long> {
            """)
     Optional<Moto> findByIdWithRefs(@Param("id") Long id);
 
-    /** Filtro paginado (sem fetch join). */
+    /** Filtro paginado (sem fetch join, para não quebrar paginação). */
     @Query("""
            select distinct m
            from Moto m

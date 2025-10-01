@@ -36,13 +36,17 @@ public class MotoService {
         return placa == null ? null : placa.trim().toUpperCase(Locale.ROOT);
     }
 
+    /* ================== Leituras ================== */
+
+    @Transactional(readOnly = true)
     @Cacheable(value = "motos", key = "#id")
     public MotoDTO findById(Long id) {
-        Moto moto = motoRepository.findById(id)
+        Moto moto = motoRepository.findByIdWithRefs(id)
                 .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada com ID: " + id));
         return convertToDTO(moto);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "motos", key = "'placa:' + #placa")
     public MotoDTO findByPlaca(String placa) {
         String norm = normalizePlaca(placa);
@@ -51,18 +55,23 @@ public class MotoService {
         return convertToDTO(moto);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "motos",
             key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<MotoDTO> findAll(Pageable pageable) {
+        // findAll do repository já tem @EntityGraph
         return motoRepository.findAll(pageable).map(this::convertToDTO);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "motos",
             key = "'filter:' + #placa + ':' + #clienteId + ':' + #modeloId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<MotoDTO> findByFilters(String placa, Long clienteId, Long modeloId, Pageable pageable) {
-        // Se seu repository usa UPPER no JPQL, pode passar o texto cru aqui.
-        return motoRepository.findByFilters(placa, clienteId, modeloId, pageable).map(this::convertToDTO);
+        return motoRepository.findByFilters(placa, clienteId, modeloId, pageable)
+                .map(this::convertToDTO);
     }
+
+    /* ================== Escritas ================== */
 
     @Transactional
     @CacheEvict(value = "motos", allEntries = true)
@@ -121,18 +130,15 @@ public class MotoService {
         moto.setPlaca(dto.getPlaca()); // normalizo no save/update
 
         if (dto.getClienteId() != null) {
-            Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                    .orElseThrow(() ->
-                            new EntityNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
+            // proxy sem hit no banco; validação fica a cargo do JPA no flush
+            Cliente cliente = clienteRepository.getReferenceById(dto.getClienteId());
             moto.setCliente(cliente);
         } else {
             moto.setCliente(null);
         }
 
-        if (dto.getModeloMotoId() != null) {
-            ModeloMoto modeloMoto = modeloMotoRepository.findById(dto.getModeloMotoId())
-                    .orElseThrow(() ->
-                            new EntityNotFoundException("Modelo de moto não encontrado com ID: " + dto.getModeloMotoId()));
+        if (dto.getModeloMotoId() != null) {   // <-- AQUI com ()
+            ModeloMoto modeloMoto = modeloMotoRepository.getReferenceById(dto.getModeloMotoId());
             moto.setModeloMoto(modeloMoto);
         } else {
             moto.setModeloMoto(null);
@@ -140,4 +146,5 @@ public class MotoService {
 
         return moto;
     }
+
 }

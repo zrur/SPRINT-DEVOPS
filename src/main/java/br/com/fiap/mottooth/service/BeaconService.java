@@ -22,35 +22,48 @@ public class BeaconService {
     private final MotoRepository motoRepository;
     private final ModeloBeaconRepository modeloBeaconRepository;
 
-    public BeaconService(BeaconRepository beaconRepository, MotoRepository motoRepository, ModeloBeaconRepository modeloBeaconRepository) {
+    public BeaconService(BeaconRepository beaconRepository,
+                         MotoRepository motoRepository,
+                         ModeloBeaconRepository modeloBeaconRepository) {
         this.beaconRepository = beaconRepository;
         this.motoRepository = motoRepository;
         this.modeloBeaconRepository = modeloBeaconRepository;
     }
 
+    /* ===================== READS ===================== */
+
+    @Transactional(readOnly = true)
     @Cacheable(value = "beacons", key = "#id")
     public BeaconDTO findById(Long id) {
-        Beacon beacon = beaconRepository.findById(id)
+        Beacon beacon = beaconRepository.findByIdWithRefs(id)
                 .orElseThrow(() -> new EntityNotFoundException("Beacon não encontrado com ID: " + id));
         return convertToDTO(beacon);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "beacons", key = "'uuid:' + #uuid")
     public BeaconDTO findByUuid(String uuid) {
-        Beacon beacon = beaconRepository.findByUuid(uuid)
+        Beacon beacon = beaconRepository.findByUuidWithRefs(uuid)
                 .orElseThrow(() -> new EntityNotFoundException("Beacon não encontrado com UUID: " + uuid));
         return convertToDTO(beacon);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "beacons", key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<BeaconDTO> findAll(Pageable pageable) {
         return beaconRepository.findAll(pageable).map(this::convertToDTO);
     }
 
-    @Cacheable(value = "beacons", key = "'filter:' + #uuid + ':' + #motoId + ':' + #modeloId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    @Transactional(readOnly = true)
+    @Cacheable(
+            value = "beacons",
+            key = "'filter:' + #uuid + ':' + #motoId + ':' + #modeloId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize"
+    )
     public Page<BeaconDTO> findByFilters(String uuid, Long motoId, Long modeloId, Pageable pageable) {
         return beaconRepository.findByFilters(uuid, motoId, modeloId, pageable).map(this::convertToDTO);
     }
+
+    /* ===================== WRITES ===================== */
 
     @Transactional
     @CacheEvict(value = "beacons", allEntries = true)
@@ -66,7 +79,6 @@ public class BeaconService {
         if (!beaconRepository.existsById(id)) {
             throw new EntityNotFoundException("Beacon não encontrado com ID: " + id);
         }
-
         Beacon beacon = convertToEntity(beaconDTO);
         beacon.setId(id);
         beacon = beaconRepository.save(beacon);
@@ -81,6 +93,8 @@ public class BeaconService {
         }
         beaconRepository.deleteById(id);
     }
+
+    /* ===================== MAPEAMENTO ===================== */
 
     private BeaconDTO convertToDTO(Beacon beacon) {
         BeaconDTO dto = new BeaconDTO();
@@ -109,14 +123,20 @@ public class BeaconService {
 
         if (dto.getMotoId() != null) {
             Moto moto = motoRepository.findById(dto.getMotoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada com ID: " + dto.getMotoId()));
+                    .orElseThrow(() ->
+                            new EntityNotFoundException("Moto não encontrada com ID: " + dto.getMotoId()));
             beacon.setMoto(moto);
+        } else {
+            beacon.setMoto(null);
         }
 
         if (dto.getModeloBeaconId() != null) {
             ModeloBeacon modeloBeacon = modeloBeaconRepository.findById(dto.getModeloBeaconId())
-                    .orElseThrow(() -> new EntityNotFoundException("Modelo de beacon não encontrado com ID: " + dto.getModeloBeaconId()));
+                    .orElseThrow(() ->
+                            new EntityNotFoundException("Modelo de beacon não encontrado com ID: " + dto.getModeloBeaconId()));
             beacon.setModeloBeacon(modeloBeacon);
+        } else {
+            beacon.setModeloBeacon(null);
         }
 
         return beacon;

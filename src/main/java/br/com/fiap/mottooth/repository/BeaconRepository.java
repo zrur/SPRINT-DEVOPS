@@ -42,7 +42,7 @@ public interface BeaconRepository extends JpaRepository<Beacon, Long> {
            """)
     List<Beacon> findAllWithRefs();
 
-    /** Busca 1 beacon por ID já com moto e modelo carregados (útil na edição). */
+    /** Busca 1 beacon por ID já com moto e modelo carregados. */
     @Query("""
            select b
            from Beacon b
@@ -51,6 +51,16 @@ public interface BeaconRepository extends JpaRepository<Beacon, Long> {
            where b.id = :id
            """)
     Optional<Beacon> findByIdWithRefs(@Param("id") Long id);
+
+    /** Busca 1 beacon por UUID já com moto e modelo carregados. */
+    @Query("""
+           select b
+           from Beacon b
+           left join fetch b.moto
+           left join fetch b.modeloBeacon
+           where upper(b.uuid) = upper(:uuid)
+           """)
+    Optional<Beacon> findByUuidWithRefs(@Param("uuid") String uuid);
 
     /** Filtro paginado (sem fetch). DISTINCT evita duplicatas. */
     @Query("""
