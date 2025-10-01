@@ -2,40 +2,66 @@
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title th:text="${#fields.hasAnyErrors()} ? 'Corrija os dados' : 'Beacon'">Beacon</title>
+    <title th:text="${beacon.id != null} ? 'Editar Beacon' : 'Novo Beacon'">Beacon</title>
     <style>
-        body{margin:0;background:#0b1020;color:#e5e7eb;font-family:system-ui}
+        :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb}
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,Arial}
         .container{max-width:900px;margin:auto;padding:16px}
-        .card{background:#11182a;border-radius:16px;padding:22px;margin-top:16px}
-        label{display:block;margin-top:10px}
+        .card{background:var(--card);border-radius:16px;padding:22px;margin-top:16px}
+        h2{margin:6px 0 14px;text-align:center}
+        label{display:block;margin:12px 0 6px}
         input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0e1627;color:#e5e7eb}
-        .right{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
-        .btn{background:#0ea5e9;color:#001827;border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
-        .btn.sec{background:#334155;color:#e5e7eb}
-        .err{color:#fca5a5;font-size:.9rem}
+        .row{display:flex;gap:12px;flex-wrap:wrap}
+        .col{flex:1 1 280px}
+        .right{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+        .btn{background:var(--c1);color:#001827;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+        .btn.sec{background:#334155;color:#e5e7eb;text-decoration:none;display:inline-block}
+        .err{color:#fecaca;font-size:.9rem;margin-top:6px}
+        .flash{margin:10px 0;padding:12px 14px;border-radius:10px;font-weight:600}
+        .flash.err{background:#3f1d1d;color:#fecaca;border:1px solid #7f1d1d}
+        .flash.ok{background:#052e16;color:#bbf7d0;border:1px solid #14532d}
     </style>
 </head>
 <body>
 
-<!-- ✅ passa a aba ativa 'beacons' -->
 <div th:replace="fragments/header :: header('Mottu Tracking','beacons')"></div>
 
 <main class="container">
-    <h2>Beacon</h2>
+    <h2 th:text="${beacon.id != null} ? 'Editar Beacon' : 'Novo Beacon'">Beacon</h2>
+
+    <div th:if="${ok}" class="flash ok" th:text="${ok}"></div>
+    <div th:if="${erro}" class="flash err" th:text="${erro}"></div>
+
     <div class="card">
-        <form th:action="${beacon.id} != null ? @{|/beacons/editar/${beacon.id}|} : @{/beacons/novo}"
-              th:object="${beacon}" method="post">
-            <input type="hidden" th:field="*{id}"/>
+        <form th:object="${beacon}"
+              th:action="${beacon.id} != null ? @{/beacons/editar/{id}(id=${beacon.id})} : @{/beacons/novo}"
+              method="post">
 
-            <label>UUID
-                <input th:field="*{uuid}" required/>
-                <span class="err" th:if="${#fields.hasErrors('uuid')}" th:errors="*{uuid}">erro</span>
-            </label>
+            <div class="row">
+                <div class="col">
+                    <label for="uuid">UUID</label>
+                    <input id="uuid" type="text" th:field="*{uuid}" placeholder="ex.: uuid-001" required/>
+                    <div class="err" th:if="${#fields.hasErrors('uuid')}" th:errors="*{uuid}"></div>
+                </div>
 
-            <label>Bateria (%)
-                <input type="number" min="0" max="100" th:field="*{bateria}" required/>
-                <span class="err" th:if="${#fields.hasErrors('bateria')}" th:errors="*{bateria}">erro</span>
-            </label>
+                <div class="col">
+                    <label for="bateria">Bateria (%)</label>
+                    <input id="bateria" type="number" min="0" max="100" th:field="*{bateria}" placeholder="0 a 100" required/>
+                    <div class="err" th:if="${#fields.hasErrors('bateria')}" th:errors="*{bateria}"></div>
+                </div>
+
+                <!-- MOSTRAR MODELO SOMENTE NA CRIAÇÃO -->
+                <div class="col" th:if="${beacon.id} == null">
+                    <label for="modeloBeaconId">Modelo do Beacon</label>
+                    <select id="modeloBeaconId" name="modeloBeaconId" required>
+                        <option value="" disabled selected>Selecione</option>
+                        <option th:each="mb : ${modelos}"
+                                th:value="${mb.id}"
+                                th:text="${mb.nome}">Modelo X</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="right">
                 <a class="btn sec" th:href="@{/beacons}">Cancelar</a>
@@ -45,7 +71,6 @@
     </div>
 </main>
 
-<!-- ✅ usa assinatura do fragmento -->
 <div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>

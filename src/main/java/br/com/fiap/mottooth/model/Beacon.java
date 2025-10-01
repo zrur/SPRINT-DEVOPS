@@ -5,19 +5,17 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 @Entity
 @Table(name = "TB_BEACON")
-@NoArgsConstructor
-@AllArgsConstructor
 @SequenceGenerator(
         name = "SEQ_BEACON",
-        sequenceName = "SEQ_BEACON", // certifique-se de criar essa sequence no Oracle
+        sequenceName = "SEQ_BEACON",
         allocationSize = 1
 )
-public class Beacon {
+public class Beacon implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_BEACON")
@@ -34,54 +32,39 @@ public class Beacon {
     @Column(name = "BATERIA")
     private Integer bateria;
 
-    @OneToOne
-    @JoinColumn(name = "ID_MOTO", unique = true) // garante relação 1–1 no banco
+    // Muitos beacons podem referenciar a mesma moto
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_MOTO", foreignKey = @ForeignKey(name = "FK_BEACON_MOTO"))
     private Moto moto;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_MODELO_BEACON")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_MODELO_BEACON", foreignKey = @ForeignKey(name = "FK_BEACON_MODELO"))
     private ModeloBeacon modeloBeacon;
 
-    // =========================
-    // Getters e Setters
-    // =========================
-    public Long getId() {
-        return id;
-    }
+    /* Getters/Setters */
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getUuid() { return uuid; }
+    public void setUuid(String uuid) { this.uuid = uuid; }
 
-    public String getUuid() {
-        return uuid;
-    }
+    public Integer getBateria() { return bateria; }
+    public void setBateria(Integer bateria) { this.bateria = bateria; }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+    public Moto getMoto() { return moto; }
+    public void setMoto(Moto moto) { this.moto = moto; }
 
-    public Integer getBateria() {
-        return bateria;
-    }
+    public ModeloBeacon getModeloBeacon() { return modeloBeacon; }
+    public void setModeloBeacon(ModeloBeacon modeloBeacon) { this.modeloBeacon = modeloBeacon; }
 
-    public void setBateria(Integer bateria) {
-        this.bateria = bateria;
+    /* equals/hashCode somente por id */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Beacon)) return false;
+        Beacon other = (Beacon) o;
+        return id != null && id.equals(other.id);
     }
-
-    public Moto getMoto() {
-        return moto;
-    }
-
-    public void setMoto(Moto moto) {
-        this.moto = moto;
-    }
-
-    public ModeloBeacon getModeloBeacon() {
-        return modeloBeacon;
-    }
-
-    public void setModeloBeacon(ModeloBeacon modeloBeacon) {
-        this.modeloBeacon = modeloBeacon;
-    }
+    @Override
+    public int hashCode() { return 31; }
 }

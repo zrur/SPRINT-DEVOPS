@@ -1,0 +1,25 @@
+DECLARE
+v_col_cnt INTEGER;
+BEGIN
+  -- só adiciona se ainda não existir
+SELECT COUNT(*) INTO v_col_cnt
+FROM ALL_TAB_COLUMNS
+WHERE OWNER = USER
+  AND TABLE_NAME = 'TB_MOTO'
+  AND COLUMN_NAME = 'DATA_REGISTRO';
+
+IF v_col_cnt = 0 THEN
+    EXECUTE IMMEDIATE '
+      ALTER TABLE TB_MOTO
+      ADD (DATA_REGISTRO TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL)
+    ';
+END IF;
+END;
+/
+
+-- Preenche as linhas antigas que estejam nulas (por segurança)
+UPDATE TB_MOTO
+SET DATA_REGISTRO = SYSTIMESTAMP
+WHERE DATA_REGISTRO IS NULL;
+
+COMMIT;

@@ -6,25 +6,33 @@
     <style>
         body{margin:0;background:#0b1020;color:#e5e7eb;font-family:system-ui}
         .container{max-width:1100px;margin:auto;padding:24px}
-        h2{margin-bottom:20px}
+        h2{margin-bottom:12px}
+        .flash{margin:10px 0;padding:12px 14px;border-radius:10px;font-weight:600}
+        .flash.ok{background:#052e1a;color:#86efac;border:1px solid #0f5132}
+        .flash.err{background:#3a1212;color:#fca5a5;border:1px solid #842029}
+
         table{width:100%;border-collapse:collapse;background:#11182a;border-radius:12px;overflow:hidden}
         th,td{padding:12px 16px;text-align:left}
         th{background:#1e293b;color:#93c5fd}
         tr:nth-child(even){background:#1e2537}
-        a.btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.9rem}
+        a.btn,button.btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.9rem;border:none;cursor:pointer;font-weight:600}
         a.btn.edit{background:#3b82f6;color:#fff}
-        a.btn.del{background:#ef4444;color:#fff}
-        a.btn.new{background:#22c55e;color:#fff;margin-bottom:16px;display:inline-block}
+        button.btn.del{background:#ef4444;color:#fff;transition:0.2s}
+        button.btn.del:hover{background:#dc2626}
+        a.btn.new{background:#22c55e;color:#fff;margin:10px 0 16px;display:inline-block}
         form{display:inline}
     </style>
 </head>
 <body>
 
-<!-- ✅ header com aba 'motos' -->
 <div th:replace="fragments/header :: header('Mottu Tracking','motos')"></div>
 
 <div class="container">
     <h2>Motos</h2>
+
+    <div th:if="${ok}"   class="flash ok"  th:text="${ok}"></div>
+    <div th:if="${erro}" class="flash err" th:text="${erro}"></div>
+
     <a th:href="@{/motos/novo}" class="btn new">+ Nova Moto</a>
 
     <table>
@@ -39,8 +47,8 @@
         <tbody>
         <tr th:each="moto : ${motos}">
             <td th:text="${moto.placa}">ABC-1234</td>
-            <td th:text="${moto.cliente != null ? moto.cliente.nome : 'Sem cliente'}">João da Silva</td>
-            <td th:text="${moto.modeloMoto != null ? moto.modeloMoto.nome : 'Sem modelo'}">CG 160</td>
+            <td th:text="${moto.cliente?.nome ?: 'Sem cliente'}">João da Silva</td>
+            <td th:text="${moto.modeloMoto?.nome ?: 'Sem modelo'}">CG 160</td>
             <td>
                 <a th:href="@{/motos/editar/{id}(id=${moto.id})}" class="btn edit">Editar</a>
                 <form th:action="@{/motos/excluir/{id}(id=${moto.id})}" method="post">
@@ -55,7 +63,6 @@
     </table>
 </div>
 
-<!-- ✅ footer() -->
 <div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>

@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+
 @Service
 public class MotoService {
 
@@ -22,10 +24,16 @@ public class MotoService {
     private final ClienteRepository clienteRepository;
     private final ModeloMotoRepository modeloMotoRepository;
 
-    public MotoService(MotoRepository motoRepository, ClienteRepository clienteRepository, ModeloMotoRepository modeloMotoRepository) {
+    public MotoService(MotoRepository motoRepository,
+                       ClienteRepository clienteRepository,
+                       ModeloMotoRepository modeloMotoRepository) {
         this.motoRepository = motoRepository;
         this.clienteRepository = clienteRepository;
         this.modeloMotoRepository = modeloMotoRepository;
+    }
+
+    private static String normalizePlaca(String placa) {
+        return placa == null ? null : placa.trim().toUpperCase(Locale.ROOT);
     }
 
     @Cacheable(value = "motos", key = "#id")
@@ -37,18 +45,22 @@ public class MotoService {
 
     @Cacheable(value = "motos", key = "'placa:' + #placa")
     public MotoDTO findByPlaca(String placa) {
-        Moto moto = motoRepository.findByPlaca(placa)
+        String norm = normalizePlaca(placa);
+        Moto moto = motoRepository.findByPlacaIgnoreCase(norm)
                 .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada com placa: " + placa));
         return convertToDTO(moto);
     }
 
-    @Cacheable(value = "motos", key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    @Cacheable(value = "motos",
+            key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<MotoDTO> findAll(Pageable pageable) {
         return motoRepository.findAll(pageable).map(this::convertToDTO);
     }
 
-    @Cacheable(value = "motos", key = "'filter:' + #placa + ':' + #clienteId + ':' + #modeloId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
+    @Cacheable(value = "motos",
+            key = "'filter:' + #placa + ':' + #clienteId + ':' + #modeloId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<MotoDTO> findByFilters(String placa, Long clienteId, Long modeloId, Pageable pageable) {
+        // Se seu repository usa UPPER no JPQL, pode passar o texto cru aqui.
         return motoRepository.findByFilters(placa, clienteId, modeloId, pageable).map(this::convertToDTO);
     }
 
@@ -56,6 +68,7 @@ public class MotoService {
     @CacheEvict(value = "motos", allEntries = true)
     public MotoDTO save(MotoDTO motoDTO) {
         Moto moto = convertToEntity(motoDTO);
+        moto.setPlaca(normalizePlaca(moto.getPlaca()));
         moto = motoRepository.save(moto);
         return convertToDTO(moto);
     }
@@ -66,9 +79,9 @@ public class MotoService {
         if (!motoRepository.existsById(id)) {
             throw new EntityNotFoundException("Moto não encontrada com ID: " + id);
         }
-
         Moto moto = convertToEntity(motoDTO);
         moto.setId(id);
+        moto.setPlaca(normalizePlaca(moto.getPlaca()));
         moto = motoRepository.save(moto);
         return convertToDTO(moto);
     }
@@ -81,6 +94,8 @@ public class MotoService {
         }
         motoRepository.deleteById(id);
     }
+
+    /* ================== mapeamentos ================== */
 
     private MotoDTO convertToDTO(Moto moto) {
         MotoDTO dto = new MotoDTO();
@@ -97,25 +112,30 @@ public class MotoService {
             dto.setModeloNome(moto.getModeloMoto().getNome());
             dto.setFabricante(moto.getModeloMoto().getFabricante());
         }
-
         return dto;
     }
 
     private Moto convertToEntity(MotoDTO dto) {
         Moto moto = new Moto();
         moto.setId(dto.getId());
-        moto.setPlaca(dto.getPlaca());
+        moto.setPlaca(dto.getPlaca()); // normalizo no save/update
 
         if (dto.getClienteId() != null) {
             Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                    .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
+                    .orElseThrow(() ->
+                            new EntityNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
             moto.setCliente(cliente);
+        } else {
+            moto.setCliente(null);
         }
 
         if (dto.getModeloMotoId() != null) {
             ModeloMoto modeloMoto = modeloMotoRepository.findById(dto.getModeloMotoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Modelo de moto não encontrado com ID: " + dto.getModeloMotoId()));
+                    .orElseThrow(() ->
+                            new EntityNotFoundException("Modelo de moto não encontrado com ID: " + dto.getModeloMotoId()));
             moto.setModeloMoto(modeloMoto);
+        } else {
+            moto.setModeloMoto(null);
         }
 
         return moto;

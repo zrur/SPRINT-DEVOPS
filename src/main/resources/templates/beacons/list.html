@@ -6,25 +6,34 @@
   <style>
     body{margin:0;background:#0b1020;color:#e5e7eb;font-family:system-ui}
     .container{max-width:1100px;margin:auto;padding:24px}
-    h2{margin-bottom:20px}
+    h2{margin-bottom:12px}
+    .flash{margin:10px 0;padding:12px 14px;border-radius:10px;font-weight:600}
+    .flash.ok{background:#052e1a;color:#86efac;border:1px solid #0f5132}
+    .flash.err{background:#3a1212;color:#fca5a5;border:1px solid #842029}
+
     table{width:100%;border-collapse:collapse;background:#11182a;border-radius:12px;overflow:hidden}
     th,td{padding:12px 16px;text-align:left}
     th{background:#1e293b;color:#93c5fd}
     tr:nth-child(even){background:#1e2537}
-    a.btn,button.btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.9rem;border:none;cursor:pointer}
+
+    a.btn,button.btn{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.9rem;border:none;cursor:pointer;font-weight:600}
     a.btn.edit{background:#3b82f6;color:#fff}
-    button.btn.del{background:#ef4444;color:#fff}
-    a.btn.new{background:#22c55e;color:#fff;margin-bottom:16px;display:inline-block}
+    button.btn.del{background:#ef4444;color:#fff;transition:0.2s}
+    button.btn.del:hover{background:#dc2626}
+    a.btn.new{background:#22c55e;color:#fff;margin:10px 0 16px;display:inline-block}
     form{display:inline}
   </style>
 </head>
 <body>
 
-<!-- ✅ header com aba 'beacons' -->
 <div th:replace="fragments/header :: header('Mottu Tracking','beacons')"></div>
 
 <div class="container">
   <h2>Beacons</h2>
+
+  <div th:if="${ok}"   class="flash ok"  th:text="${ok}"></div>
+  <div th:if="${erro}" class="flash err" th:text="${erro}"></div>
+
   <a th:href="@{/beacons/novo}" class="btn new">+ Novo Beacon</a>
 
   <table>
@@ -32,30 +41,38 @@
     <tr>
       <th>UUID</th>
       <th>Bateria (%)</th>
-      <th>Moto</th>
+      <th>Moto (placa)</th>
+      <th>Modelo</th>
       <th>Ações</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="b : ${beacons}">
-      <td th:text="${b.uuid}">uuid-001</td>
-      <td th:text="${b.bateria}">90</td>
-      <td th:text="${b.moto != null ? b.moto.placa : '—'}">ABC-1234</td>
+      <td th:text="${b.uuid}">0000-0000</td>
+      <td th:text="${b.bateria}">0</td>
+
+      <!-- null-safe: se b.moto for null, mostra '-' -->
+      <td th:text="${#strings.defaultString(b.moto?.placa, '-')}">-</td>
+
+      <!-- null-safe: se b.modeloBeacon for null, mostra '-' -->
+      <td th:text="${#strings.defaultString(b.modeloBeacon?.nome, '-')}">-</td>
+
       <td>
         <a th:href="@{/beacons/editar/{id}(id=${b.id})}" class="btn edit">Editar</a>
         <form th:action="@{/beacons/excluir/{id}(id=${b.id})}" method="post">
-          <button type="submit" class="btn del">Excluir</button>
+          <button type="submit" class="btn del"
+                  onclick="return confirm('Confirma excluir este beacon?')">Excluir</button>
         </form>
       </td>
     </tr>
+
     <tr th:if="${#lists.isEmpty(beacons)}">
-      <td colspan="4">Nenhum beacon cadastrado.</td>
+      <td colspan="5">Nenhum beacon cadastrado.</td>
     </tr>
     </tbody>
   </table>
 </div>
 
-<!-- ✅ footer() -->
 <div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>

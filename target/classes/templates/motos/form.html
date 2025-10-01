@@ -16,14 +16,24 @@
         .btn.sec{background:#334155;color:#e5e7eb}
         .right{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
         .err{color:#fca5a5;font-size:.9rem}
+        .flash-ok{color:#86efac}.flash-err{color:#fca5a5}
     </style>
 </head>
 <body>
+<div th:replace="fragments/header :: header('Mottu Tracking','motos')"></div>
+
 <main class="container">
     <h2 th:text="${moto.id} != null ? 'Editar Moto' : 'Nova Moto'">Moto</h2>
+
+    <!-- msgs de validação vinda do controller -->
+    <p th:if="${ok}"   class="flash-ok"  th:text="${ok}"></p>
+    <p th:if="${erro}" class="flash-err" th:text="${erro}"></p>
+
     <div class="card">
-        <form th:action="${moto.id} != null ? @{|/motos/editar/${moto.id}|} : @{/motos/novo}"
-              th:object="${moto}" method="post" class="grid">
+        <form th:object="${moto}"
+              th:action="${moto.id} != null ? @{/motos/editar/{id}(id=${moto.id})} : @{/motos/novo}"
+              method="post" class="grid">
+
             <input type="hidden" th:field="*{id}"/>
 
             <label>Placa
@@ -33,15 +43,17 @@
 
             <label>Cliente
                 <select th:field="*{clienteId}">
-                    <option th:value="" disabled selected>Selecione</option>
-                    <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
+                    <option value="" disabled
+                            th:selected="${moto.clienteId} == null">Selecione</option>
+                    <option th:each="c: ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
                 </select>
             </label>
 
             <label>Modelo
                 <select th:field="*{modeloMotoId}">
-                    <option th:value="" disabled selected>Selecione</option>
-                    <option th:each="m : ${modelos}" th:value="${m.id}"
+                    <option value="" disabled
+                            th:selected="${moto.modeloMotoId} == null">Selecione</option>
+                    <option th:each="m: ${modelos}" th:value="${m.id}"
                             th:text="${m.nome + ' - ' + m.fabricante}"></option>
                 </select>
             </label>
@@ -53,5 +65,7 @@
         </form>
     </div>
 </main>
+
+<div th:replace="fragments/footer :: footer()"></div>
 </body>
 </html>
