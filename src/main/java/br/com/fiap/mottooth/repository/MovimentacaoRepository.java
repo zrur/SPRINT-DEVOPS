@@ -23,4 +23,7 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
 
     // NOVO: último movimento da moto (para bloquear consecutivos iguais)
     Optional<Movimentacao> findTopByMoto_IdOrderByDataMovimentacaoDesc(Long motoId);
+
+    // >>> NOVO: usado para bloquear exclusão de motos com movimentações
+    boolean existsByMoto_Id(Long motoId);
 }

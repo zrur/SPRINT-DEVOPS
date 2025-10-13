@@ -36,4 +36,7 @@ public interface LocalizacaoRepository extends JpaRepository<Localizacao, Long> 
 
     /** Usado no DataLoader para não inserir localização duplicada no mesmo instante. */
     Optional<Localizacao> findFirstByMotoAndDataHora(Moto moto, LocalDateTime dataHora);
+
+    // >>> NOVO: usado para bloquear exclusão de motos com localizações
+    boolean existsByMoto_Id(Long motoId);
 }

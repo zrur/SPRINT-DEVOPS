@@ -7,9 +7,13 @@ import br.com.fiap.mottooth.model.Moto;
 import br.com.fiap.mottooth.repository.ClienteRepository;
 import br.com.fiap.mottooth.repository.ModeloMotoRepository;
 import br.com.fiap.mottooth.repository.MotoRepository;
+import br.com.fiap.mottooth.repository.BeaconRepository;
+import br.com.fiap.mottooth.repository.LocalizacaoRepository;
+import br.com.fiap.mottooth.repository.MovimentacaoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,12 +28,23 @@ public class MotoService {
     private final ClienteRepository clienteRepository;
     private final ModeloMotoRepository modeloMotoRepository;
 
+    // repos usados para a validação de vínculos
+    private final BeaconRepository beaconRepository;
+    private final LocalizacaoRepository localizacaoRepository;
+    private final MovimentacaoRepository movimentacaoRepository;
+
     public MotoService(MotoRepository motoRepository,
                        ClienteRepository clienteRepository,
-                       ModeloMotoRepository modeloMotoRepository) {
+                       ModeloMotoRepository modeloMotoRepository,
+                       BeaconRepository beaconRepository,
+                       LocalizacaoRepository localizacaoRepository,
+                       MovimentacaoRepository movimentacaoRepository) {
         this.motoRepository = motoRepository;
         this.clienteRepository = clienteRepository;
         this.modeloMotoRepository = modeloMotoRepository;
+        this.beaconRepository = beaconRepository;
+        this.localizacaoRepository = localizacaoRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
     }
 
     private static String normalizePlaca(String placa) {
@@ -59,7 +74,6 @@ public class MotoService {
     @Cacheable(value = "motos",
             key = "'page:' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<MotoDTO> findAll(Pageable pageable) {
-        // findAll do repository já tem @EntityGraph
         return motoRepository.findAll(pageable).map(this::convertToDTO);
     }
 
@@ -67,8 +81,7 @@ public class MotoService {
     @Cacheable(value = "motos",
             key = "'filter:' + #placa + ':' + #clienteId + ':' + #modeloId + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public Page<MotoDTO> findByFilters(String placa, Long clienteId, Long modeloId, Pageable pageable) {
-        return motoRepository.findByFilters(placa, clienteId, modeloId, pageable)
-                .map(this::convertToDTO);
+        return motoRepository.findByFilters(placa, clienteId, modeloId, pageable).map(this::convertToDTO);
     }
 
     /* ================== Escritas ================== */
@@ -101,7 +114,30 @@ public class MotoService {
         if (!motoRepository.existsById(id)) {
             throw new EntityNotFoundException("Moto não encontrada com ID: " + id);
         }
-        motoRepository.deleteById(id);
+
+        // ======== Valida vínculos antes de excluir (Opção A) ========
+        boolean temMov        = movimentacaoRepository.existsByMoto_Id(id);
+        boolean temLoc        = localizacaoRepository.existsByMoto_Id(id);
+        boolean temBeacon     = beaconRepository.existsByMoto_Id(id);
+
+        if (temMov || temLoc || temBeacon) {
+            StringBuilder sb = new StringBuilder("Não é possível excluir a moto: existem ");
+            boolean first = true;
+            if (temMov)    { sb.append(first ? "" : ", ").append("movimentações"); first = false; }
+            if (temLoc)    { sb.append(first ? "" : ", ").append("localizações");  first = false; }
+            if (temBeacon) { sb.append(first ? "" : ", ").append("beacons"); }
+            sb.append(" vinculados.");
+            throw new IllegalStateException(sb.toString());
+        }
+
+        try {
+            motoRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            // fallback caso alguma FK não mapeada prenda a exclusão
+            throw new IllegalStateException(
+                    "Não foi possível excluir: existem registros dependentes vinculados à moto."
+            );
+        }
     }
 
     /* ================== mapeamentos ================== */
@@ -130,14 +166,13 @@ public class MotoService {
         moto.setPlaca(dto.getPlaca()); // normalizo no save/update
 
         if (dto.getClienteId() != null) {
-            // proxy sem hit no banco; validação fica a cargo do JPA no flush
             Cliente cliente = clienteRepository.getReferenceById(dto.getClienteId());
             moto.setCliente(cliente);
         } else {
             moto.setCliente(null);
         }
 
-        if (dto.getModeloMotoId() != null) {   // <-- AQUI com ()
+        if (dto.getModeloMotoId() != null) {
             ModeloMoto modeloMoto = modeloMotoRepository.getReferenceById(dto.getModeloMotoId());
             moto.setModeloMoto(modeloMoto);
         } else {
@@ -146,5 +181,4 @@ public class MotoService {
 
         return moto;
     }
-
 }

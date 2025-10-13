@@ -5,6 +5,12 @@ import br.com.fiap.mottooth.model.Moto;
 import br.com.fiap.mottooth.repository.ClienteRepository;
 import br.com.fiap.mottooth.repository.ModeloMotoRepository;
 import br.com.fiap.mottooth.repository.MotoRepository;
+
+// >>> ADICIONE ESTES IMPORTS
+import br.com.fiap.mottooth.repository.BeaconRepository;
+import br.com.fiap.mottooth.repository.LocalizacaoRepository;
+import br.com.fiap.mottooth.repository.MovimentacaoRepository;
+
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -25,12 +31,25 @@ public class MotoPageController {
     private final ClienteRepository clienteRepository;
     private final ModeloMotoRepository modeloMotoRepository;
 
+    // >>> NOVO: repositórios usados para verificar vínculos antes de excluir
+    private final BeaconRepository beaconRepository;
+    private final LocalizacaoRepository localizacaoRepository;
+    private final MovimentacaoRepository movimentacaoRepository;
+
     public MotoPageController(MotoRepository motoRepository,
                               ClienteRepository clienteRepository,
-                              ModeloMotoRepository modeloMotoRepository) {
+                              ModeloMotoRepository modeloMotoRepository,
+                              // >>> NOVOS PARÂMETROS
+                              BeaconRepository beaconRepository,
+                              LocalizacaoRepository localizacaoRepository,
+                              MovimentacaoRepository movimentacaoRepository) {
         this.motoRepository = motoRepository;
         this.clienteRepository = clienteRepository;
         this.modeloMotoRepository = modeloMotoRepository;
+        // >>> ATRIBUIÇÕES NOVAS
+        this.beaconRepository = beaconRepository;
+        this.localizacaoRepository = localizacaoRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
     }
 
     /* --------- HELPERS --------- */
@@ -173,15 +192,31 @@ public class MotoPageController {
         return "redirect:/motos";
     }
 
-    /* --------- EXCLUIR --------- */
+    /* --------- EXCLUIR --------- (atualizado para bloquear por vínculos) */
     @PostMapping("/excluir/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
-        if (motoRepository.existsById(id)) {
-            motoRepository.deleteById(id);
-            ra.addFlashAttribute("ok", "Moto excluída.");
-        } else {
+        if (!motoRepository.existsById(id)) {
             ra.addFlashAttribute("erro", "Moto não encontrada.");
+            return "redirect:/motos";
         }
+
+        boolean temMov    = movimentacaoRepository.existsByMoto_Id(id);
+        boolean temLoc    = localizacaoRepository.existsByMoto_Id(id);
+        boolean temBeacon = beaconRepository.existsByMoto_Id(id);
+
+        if (temMov || temLoc || temBeacon) {
+            StringBuilder sb = new StringBuilder("Não é possível excluir a moto: existem ");
+            boolean first = true;
+            if (temMov)    { sb.append(first ? "" : ", ").append("movimentações"); first = false; }
+            if (temLoc)    { sb.append(first ? "" : ", ").append("localizações");  first = false; }
+            if (temBeacon) { sb.append(first ? "" : ", ").append("beacons"); }
+            sb.append(" vinculados.");
+            ra.addFlashAttribute("erro", sb.toString());
+            return "redirect:/motos";
+        }
+
+        motoRepository.deleteById(id);
+        ra.addFlashAttribute("ok", "Moto excluída.");
         return "redirect:/motos";
     }
 
