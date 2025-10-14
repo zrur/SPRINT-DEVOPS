@@ -4,12 +4,7 @@ import br.com.fiap.mottooth.dto.MotoDTO;
 import br.com.fiap.mottooth.model.Cliente;
 import br.com.fiap.mottooth.model.ModeloMoto;
 import br.com.fiap.mottooth.model.Moto;
-import br.com.fiap.mottooth.repository.ClienteRepository;
-import br.com.fiap.mottooth.repository.ModeloMotoRepository;
-import br.com.fiap.mottooth.repository.MotoRepository;
-import br.com.fiap.mottooth.repository.BeaconRepository;
-import br.com.fiap.mottooth.repository.LocalizacaoRepository;
-import br.com.fiap.mottooth.repository.MovimentacaoRepository;
+import br.com.fiap.mottooth.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -98,12 +93,21 @@ public class MotoService {
     @Transactional
     @CacheEvict(value = "motos", allEntries = true)
     public MotoDTO update(Long id, MotoDTO motoDTO) {
-        if (!motoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Moto não encontrada com ID: " + id);
-        }
+        // Verifica se a moto existe
+        Moto motoExistente = motoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Moto não encontrada com ID: " + id));
+
+        // Converte o DTO em entidade
         Moto moto = convertToEntity(motoDTO);
+
+        // 🔥 Preserva a data de registro anterior (evita ORA-01407)
+        moto.setDataRegistro(motoExistente.getDataRegistro());
+
+        // Define ID e normaliza placa
         moto.setId(id);
         moto.setPlaca(normalizePlaca(moto.getPlaca()));
+
+        // Salva a atualização
         moto = motoRepository.save(moto);
         return convertToDTO(moto);
     }
@@ -116,16 +120,24 @@ public class MotoService {
         }
 
         // ======== Valida vínculos antes de excluir (Opção A) ========
-        boolean temMov        = movimentacaoRepository.existsByMoto_Id(id);
-        boolean temLoc        = localizacaoRepository.existsByMoto_Id(id);
-        boolean temBeacon     = beaconRepository.existsByMoto_Id(id);
+        boolean temMov = movimentacaoRepository.existsByMoto_Id(id);
+        boolean temLoc = localizacaoRepository.existsByMoto_Id(id);
+        boolean temBeacon = beaconRepository.existsByMoto_Id(id);
 
         if (temMov || temLoc || temBeacon) {
             StringBuilder sb = new StringBuilder("Não é possível excluir a moto: existem ");
             boolean first = true;
-            if (temMov)    { sb.append(first ? "" : ", ").append("movimentações"); first = false; }
-            if (temLoc)    { sb.append(first ? "" : ", ").append("localizações");  first = false; }
-            if (temBeacon) { sb.append(first ? "" : ", ").append("beacons"); }
+            if (temMov) {
+                sb.append(first ? "" : ", ").append("movimentações");
+                first = false;
+            }
+            if (temLoc) {
+                sb.append(first ? "" : ", ").append("localizações");
+                first = false;
+            }
+            if (temBeacon) {
+                sb.append(first ? "" : ", ").append("beacons");
+            }
             sb.append(" vinculados.");
             throw new IllegalStateException(sb.toString());
         }
@@ -133,7 +145,6 @@ public class MotoService {
         try {
             motoRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            // fallback caso alguma FK não mapeada prenda a exclusão
             throw new IllegalStateException(
                     "Não foi possível excluir: existem registros dependentes vinculados à moto."
             );
@@ -157,13 +168,14 @@ public class MotoService {
             dto.setModeloNome(moto.getModeloMoto().getNome());
             dto.setFabricante(moto.getModeloMoto().getFabricante());
         }
+
         return dto;
     }
 
     private Moto convertToEntity(MotoDTO dto) {
         Moto moto = new Moto();
         moto.setId(dto.getId());
-        moto.setPlaca(dto.getPlaca()); // normalizo no save/update
+        moto.setPlaca(dto.getPlaca());
 
         if (dto.getClienteId() != null) {
             Cliente cliente = clienteRepository.getReferenceById(dto.getClienteId());

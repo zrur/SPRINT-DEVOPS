@@ -146,29 +146,29 @@ public class DataLoader {
                     });
 
             // =========================
-            // BEACONS (idempotente por UUID)
+            // BEACONS (idempotente por UUID e moto)
             // =========================
             Beacon b1 = beaconRepository.findByUuid("uuid-001-ABC")
-                    .orElseGet(() -> {
-                        Beacon b = new Beacon();
-                        b.setUuid("uuid-001-ABC");
-                        b.setBateria(85);
-                        b.setMoto(moto1);
-                        b.setModeloBeacon(beaconModelo1);
-                        return beaconRepository.save(b);
-                    });
+                    .orElseGet(() -> beaconRepository.findFirstByMoto_Id(moto1.getId())
+                            .orElseGet(() -> {
+                                Beacon b = new Beacon();
+                                b.setUuid("uuid-001-ABC");
+                                b.setBateria(85);
+                                b.setMoto(moto1);
+                                b.setModeloBeacon(beaconModelo1);
+                                return beaconRepository.save(b);
+                            }));
 
             Beacon b2 = beaconRepository.findByUuid("uuid-002-XYZ")
-                    .orElseGet(() -> {
-                        Beacon b = new Beacon();
-                        b.setUuid("uuid-002-XYZ");
-                        b.setBateria(92);
-                        b.setMoto(moto2);
-                        b.setModeloBeacon(beaconModelo2);
-                        return beaconRepository.save(b);
-                    });
-
-            if (b1 == null || b2 == null) { /* no-op */ }
+                    .orElseGet(() -> beaconRepository.findFirstByMoto_Id(moto2.getId())
+                            .orElseGet(() -> {
+                                Beacon b = new Beacon();
+                                b.setUuid("uuid-002-XYZ");
+                                b.setBateria(92);
+                                b.setMoto(moto2);
+                                b.setModeloBeacon(beaconModelo2);
+                                return beaconRepository.save(b);
+                            }));
 
             // =========================
             // PÁTIOS (idempotente por nome)
