@@ -2,6 +2,7 @@ package br.com.fiap.mottooth.config;
 
 import br.com.fiap.mottooth.security.JwtAuthenticationFilter;
 import javax.sql.DataSource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -35,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/usuarios",           // Permite o cadastro de usuário
+                                "/api/usuarios",          // cadastro via API permitido
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/api-docs/**"
@@ -55,7 +56,10 @@ public class SecurityConfig {
     SecurityFilterChain webSecurity(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/img/**").permitAll()
+                        .requestMatchers(
+                                "/login", "/register", "/register/**",
+                                "/css/**", "/js/**", "/img/**"
+                        ).permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/", "/index").authenticated()
                         .requestMatchers("/motos/**", "/beacons/**", "/flows/**")
@@ -82,10 +86,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint((req, res, e) -> res.sendRedirect("/login?error"))
                         .accessDeniedHandler((req, res, e) -> res.sendRedirect("/login?denied"))
                 )
-                .sessionManagement(sm -> sm
-                        .invalidSessionUrl("/login?session")
-                        .maximumSessions(1)
-                )
+                .sessionManagement(sm -> sm.invalidSessionUrl("/login?session").maximumSessions(1))
                 .csrf(csrf -> csrf.disable());
 
         return http.build();
@@ -96,6 +97,7 @@ public class SecurityConfig {
     // =========================
     @Bean
     public PasswordEncoder passwordEncoder() {
+        // Mantém compatibilidade com senhas em texto (fiap25)
         return NoOpPasswordEncoder.getInstance();
     }
 

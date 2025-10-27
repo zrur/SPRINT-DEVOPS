@@ -19,6 +19,7 @@
         .ok{color:#86efac}
         .muted{color:var(--muted)}
         footer{opacity:.75;padding:24px 0;text-align:center}
+        .link-btn{display:block;margin-top:12px;text-align:center}
     </style>
 </head>
 <body>
@@ -38,13 +39,18 @@
             <button class="btn" type="submit">Acessar</button>
         </form>
 
-        <!-- Mensagens (controladas por parâmetros na URL) -->
+        <div class="link-btn">
+            <form th:action="@{/register}" method="get">
+                <button class="btn" type="submit">Cadastrar</button>
+            </form>
+        </div>
+
+        <!-- Mensagens -->
         <div class="msg err" th:if="${param.error}">Usuário ou senha inválidos. Tente novamente.</div>
-        <div class="msg err" th:if="${param.denied}">Acesso negado. Seu usuário não possui permissão.</div>
-        <div class="msg err" th:if="${param.session}">Sua sessão expirou. Faça login novamente.</div>
+        <div class="msg ok"  th:if="${msgOk}" th:text="${msgOk}"></div>
+        <div class="msg err" th:if="${msgErr}" th:text="${msgErr}"></div>
         <div class="msg ok"  th:if="${param.logout}">Sessão encerrada com sucesso.</div>
 
-        <!-- Dica simplificada (apenas admin) -->
         <div class="msg muted">Dica: admin@ex.com / fiap25</div>
     </div>
 </main>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Login · Mottu Tracking</title>
+    <title>Cadastrar · Mottu Tracking</title>
     <style>
         :root{--c1:#0ea5e9;--bg:#0b1020;--card:#11182a;--txt:#e5e7eb;--muted:#94a3b8}
         *{box-sizing:border-box}
@@ -26,32 +26,29 @@
 <h1>Mottu – Tracking</h1>
 <main class="container">
     <div class="card">
-        <h2 style="margin:0 0 12px">Entrar</h2>
+        <h2 style="margin:0 0 12px">Criar Conta</h2>
 
-        <!-- Importante: method POST e action /login -->
-        <form th:action="@{/login}" method="post">
-            <label>Usuário</label>
-            <input type="text" name="username" placeholder="admin@ex.com" required autocomplete="username"/>
+        <form th:action="@{/register}" method="post">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="seu@email.com" required/>
+
+            <label>Nome</label>
+            <input type="text" name="nome" placeholder="Seu nome"/>
 
             <label>Senha</label>
-            <input type="password" name="password" placeholder="••••••" required autocomplete="current-password"/>
+            <input type="password" name="senha" placeholder="Digite uma senha" required/>
 
-            <button class="btn" type="submit">Acessar</button>
+            <button class="btn" type="submit">Cadastrar</button>
         </form>
 
         <div class="link-btn">
-            <form th:action="@{/register}" method="get">
-                <button class="btn" type="submit">Cadastrar</button>
+            <form th:action="@{/login}" method="get">
+                <button class="btn" type="submit">Voltar ao Login</button>
             </form>
         </div>
 
-        <!-- Mensagens -->
-        <div class="msg err" th:if="${param.error}">Usuário ou senha inválidos. Tente novamente.</div>
-        <div class="msg ok"  th:if="${msgOk}" th:text="${msgOk}"></div>
         <div class="msg err" th:if="${msgErr}" th:text="${msgErr}"></div>
-        <div class="msg ok"  th:if="${param.logout}">Sessão encerrada com sucesso.</div>
-
-        <div class="msg muted">Dica: admin@ex.com / fiap25</div>
+        <div class="msg ok" th:if="${msgOk}" th:text="${msgOk}"></div>
     </div>
 </main>
 <footer class="container"><small>&copy; 2025 Mottu · FIAP · Sprint Java Advanced</small></footer>
