@@ -2,7 +2,6 @@ package br.com.fiap.mottooth.config;
 
 import br.com.fiap.mottooth.security.JwtAuthenticationFilter;
 import javax.sql.DataSource;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -34,7 +33,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/api-docs/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/usuarios",           // Permite o cadastro de usuário
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/api-docs/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -58,8 +63,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")              // GET da página de login
-                        .loginProcessingUrl("/login")     // POST do formulário
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/", true)
@@ -67,7 +72,6 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        // Aceita POST e GET em /logout (para funcionar com <a href="/logout">)
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                         .logoutSuccessUrl("/login?logout")
                         .invalidateHttpSession(true)
@@ -79,7 +83,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((req, res, e) -> res.sendRedirect("/login?denied"))
                 )
                 .sessionManagement(sm -> sm
-                        .invalidSessionUrl("/login?session") // só aparece quando a sessão expira de verdade
+                        .invalidSessionUrl("/login?session")
                         .maximumSessions(1)
                 )
                 .csrf(csrf -> csrf.disable());
@@ -92,7 +96,6 @@ public class SecurityConfig {
     // =========================
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // DEV: compatível com senhas em texto (fiap25). Futuro: usar BCrypt.
         return NoOpPasswordEncoder.getInstance();
     }
 
