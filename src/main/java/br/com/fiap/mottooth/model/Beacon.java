@@ -10,15 +10,10 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "TB_BEACON")
-@SequenceGenerator(
-        name = "SEQ_BEACON",
-        sequenceName = "SEQ_BEACON",
-        allocationSize = 1
-)
 public class Beacon implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_BEACON")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_BEACON")
     private Long id;
 

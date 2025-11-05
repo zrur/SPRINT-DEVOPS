@@ -17,15 +17,10 @@ import java.util.List;
                 @UniqueConstraint(name = "UK_MOTO_PLACA", columnNames = "PLACA")
         }
 )
-@SequenceGenerator(
-        name = "SEQ_MOTO",
-        sequenceName = "SEQ_MOTO",
-        allocationSize = 1
-)
 public class Moto implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_MOTO")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_MOTO")
     private Long id;
 

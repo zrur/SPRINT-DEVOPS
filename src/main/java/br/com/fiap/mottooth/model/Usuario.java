@@ -12,15 +12,10 @@ import java.time.LocalDateTime;
 @Table(name = "TB_USUARIO")
 @NoArgsConstructor
 @AllArgsConstructor
-@SequenceGenerator(
-        name = "SEQ_USUARIO",
-        sequenceName = "SEQ_USUARIO", // certifique-se de criar essa sequence no Oracle
-        allocationSize = 1
-)
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_USUARIO")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_USUARIO")
     private Long id;
 

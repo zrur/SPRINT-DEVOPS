@@ -10,15 +10,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "TB_TIPO_USUARIO")
 @NoArgsConstructor
 @AllArgsConstructor
-@SequenceGenerator(
-        name = "SEQ_TIPO_USUARIO",
-        sequenceName = "SEQ_TIPO_USUARIO", // certifique-se de criar essa sequence no Oracle
-        allocationSize = 1
-)
 public class TipoUsuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_TIPO_USUARIO")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_TIPO_USUARIO")
     private Long id;
 

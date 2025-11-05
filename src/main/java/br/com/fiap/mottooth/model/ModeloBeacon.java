@@ -10,15 +10,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "TB_MODELO_BEACON")
 @NoArgsConstructor
 @AllArgsConstructor
-@SequenceGenerator(
-        name = "SEQ_MODELO_BEACON",
-        sequenceName = "SEQ_MODELO_BEACON", // certifique-se de criar essa sequence no Oracle
-        allocationSize = 1
-)
 public class ModeloBeacon {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_MODELO_BEACON")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_MODELO_BEACON")
     private Long id;
 

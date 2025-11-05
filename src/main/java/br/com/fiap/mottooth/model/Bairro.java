@@ -12,15 +12,10 @@ import java.util.List;
 @Table(name = "TB_BAIRRO")
 @NoArgsConstructor
 @AllArgsConstructor
-@SequenceGenerator(
-        name = "SEQ_BAIRRO",
-        sequenceName = "SEQ_BAIRRO",
-        allocationSize = 1
-)
 public class Bairro {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_BAIRRO")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_BAIRRO")
     private Long id;
 

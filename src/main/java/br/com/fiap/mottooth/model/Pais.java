@@ -12,15 +12,10 @@ import java.util.List;
 @Table(name = "TB_PAIS")
 @NoArgsConstructor
 @AllArgsConstructor
-@SequenceGenerator(
-        name = "SEQ_PAIS",
-        sequenceName = "SEQ_PAIS", // certifique-se de criar essa sequence no Oracle
-        allocationSize = 1
-)
 public class Pais {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PAIS")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_PAIS")
     private Long id;
 
