@@ -1,0 +1,99 @@
+# azure-pipelines-cd.yml (VERSÃO SIMPLIFICADA)
+
+trigger: none
+
+resources:
+  pipelines:
+    - pipeline: CI
+      source: 'mottooth-ci'
+      trigger:
+        branches:
+          include:
+            - sprint-4-devops
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: 'mottooth-variables'
+
+stages:
+  - stage: Deploy
+    displayName: 'Deploy para Azure Web App'
+    jobs:
+      - job: DeployJob
+        displayName: 'Deploy Docker Container'
+        steps:
+          # 1. Download image info
+          - download: CI
+            artifact: image-info
+            displayName: 'Download Image Info'
+
+          # 2. Ler image tag
+          - bash: |
+              IMAGE_TAG=$(cat $(Pipeline.Workspace)/CI/image-info/image-tag.txt)
+              echo "Image a ser deployada: $IMAGE_TAG"
+              echo "##vso[task.setvariable variable=FULL_IMAGE]$IMAGE_TAG"
+            displayName: 'Ler Image Tag'
+
+          # 3. Instalar Azure CLI (já vem instalado na VM)
+          - bash: |
+              az --version
+            displayName: 'Verificar Azure CLI'
+
+          # 4. Login no Azure com Service Principal OU credenciais
+          # TEMPORÁRIO: vamos usar az login interativo via browser
+          # Para produção, você precisa de um Service Principal
+
+          # 5. Configurar Web App para usar ACR
+          - bash: |
+              # Configurar container registry no Web App
+              az webapp config container set \
+                --name $(WEBAPP_NAME) \
+                --resource-group $(RESOURCE_GROUP) \
+                --docker-custom-image-name $(FULL_IMAGE) \
+                --docker-registry-server-url https://mottoothacr558881.azurecr.io \
+                --docker-registry-server-user $(ACR_USERNAME) \
+                --docker-registry-server-password $(ACR_PASSWORD)
+              
+              echo "✅ Container configurado!"
+            displayName: 'Configurar Container no Web App'
+            env:
+              AZURE_CONFIG_DIR: $(Agent.TempDirectory)/.azure
+
+          # 6. Restart Web App
+          - bash: |
+              az webapp restart \
+                --name $(WEBAPP_NAME) \
+                --resource-group $(RESOURCE_GROUP)
+              
+              echo "✅ Web App reiniciado!"
+              echo ""
+              echo "🌐 Aplicação disponível em:"
+              echo "https://$(WEBAPP_NAME).azurewebsites.net"
+            displayName: 'Restart Web App'
+            env:
+              AZURE_CONFIG_DIR: $(Agent.TempDirectory)/.azure
+
+          # 7. Verificar status
+          - bash: |
+              echo "Aguardando 30s para aplicação iniciar..."
+              sleep 30
+              
+              STATUS=$(az webapp show \
+                --name $(WEBAPP_NAME) \
+                --resource-group $(RESOURCE_GROUP) \
+                --query state \
+                --output tsv)
+              
+              echo "Status do Web App: $STATUS"
+              
+              if [ "$STATUS" == "Running" ]; then
+                echo "✅ Deploy concluído com sucesso!"
+              else
+                echo "⚠️ Web App não está Running. Verifique os logs."
+                exit 1
+              fi
+            displayName: 'Verificar Deploy'
+            env:
+              AZURE_CONFIG_DIR: $(Agent.TempDirectory)/.azure

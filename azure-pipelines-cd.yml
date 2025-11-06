@@ -1,0 +1,43 @@
+# azure-pipelines-cd.yml (SEM SENHAS!)
+
+trigger: none
+
+# Manual trigger apenas
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: 'mottooth-variables'
+
+stages:
+  - stage: Deploy
+    displayName: 'Deploy Manual Web App'
+    jobs:
+      - job: DeployInstructions
+        displayName: 'Instruções de Deploy'
+        steps:
+          - bash: |
+              echo "========================================"
+              echo "DEPLOY MANUAL - Executar no terminal:"
+              echo "========================================"
+              echo ""
+              echo "1. Configure o container no Web App:"
+              echo ""
+              echo "az webapp config container set \\"
+              echo "  --name $(WEBAPP_NAME) \\"
+              echo "  --resource-group $(RESOURCE_GROUP) \\"
+              echo "  --docker-custom-image-name mottoothacr558881.azurecr.io/mottooth:latest \\"
+              echo "  --docker-registry-server-url https://mottoothacr558881.azurecr.io \\"
+              echo "  --docker-registry-server-user \$(ACR_USERNAME) \\"
+              echo "  --docker-registry-server-password \$(ACR_PASSWORD)"
+              echo ""
+              echo "2. Restart:"
+              echo ""
+              echo "az webapp restart --name $(WEBAPP_NAME) --resource-group $(RESOURCE_GROUP)"
+              echo ""
+              echo "3. Acesse:"
+              echo "https://$(WEBAPP_NAME).azurewebsites.net"
+              echo ""
+            displayName: 'Comandos de Deploy Manual'
