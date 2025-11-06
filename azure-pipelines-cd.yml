@@ -1,43 +1,107 @@
-# azure-pipelines-cd.yml (SEM SENHAS!)
-
+# azure-pipelines-cd.yml
 trigger: none
-
-# Manual trigger apenas
 pr: none
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: 'mottooth-variables'
+  - group: 'mottooth-variables'   # WEBAPP_NAME, RESOURCE_GROUP, ACR_LOGIN_SERVER, ACR_USERNAME, ACR_PASSWORD, DB_*
 
 stages:
   - stage: Deploy
-    displayName: 'Deploy Manual Web App'
+    displayName: 'Deploy Web App (Container)'
     jobs:
-      - job: DeployInstructions
-        displayName: 'Instruções de Deploy'
+      - job: DeployWebApp
+        displayName: 'Deploy para Azure App Service'
         steps:
-          - bash: |
-              echo "========================================"
-              echo "DEPLOY MANUAL - Executar no terminal:"
-              echo "========================================"
-              echo ""
-              echo "1. Configure o container no Web App:"
-              echo ""
-              echo "az webapp config container set \\"
-              echo "  --name $(WEBAPP_NAME) \\"
-              echo "  --resource-group $(RESOURCE_GROUP) \\"
-              echo "  --docker-custom-image-name mottoothacr558881.azurecr.io/mottooth:latest \\"
-              echo "  --docker-registry-server-url https://mottoothacr558881.azurecr.io \\"
-              echo "  --docker-registry-server-user \$(ACR_USERNAME) \\"
-              echo "  --docker-registry-server-password \$(ACR_PASSWORD)"
-              echo ""
-              echo "2. Restart:"
-              echo ""
-              echo "az webapp restart --name $(WEBAPP_NAME) --resource-group $(RESOURCE_GROUP)"
-              echo ""
-              echo "3. Acesse:"
-              echo "https://$(WEBAPP_NAME).azurewebsites.net"
-              echo ""
-            displayName: 'Comandos de Deploy Manual'
+          # 1) Login no Azure
+          - task: AzureCLI@2
+            displayName: 'Azure Login'
+            inputs:
+              azureSubscription: 'Azure-ServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az account show
+
+          # 2) Configurar imagem do container (flags novas)
+          - task: AzureCLI@2
+            displayName: 'Configurar imagem do container'
+            inputs:
+              azureSubscription: 'Azure-ServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                IMAGE="$(ACR_LOGIN_SERVER)/mottooth:latest"   # troque p/ $(Build.BuildId) se quiser versionar
+                az webapp config container set \
+                  --name "$(WEBAPP_NAME)" \
+                  --resource-group "$(RESOURCE_GROUP)" \
+                  --container-image-name "$IMAGE" \
+                  --container-registry-url "https://$(ACR_LOGIN_SERVER)" \
+                  --container-registry-user "$(ACR_USERNAME)" \
+                  --container-registry-password "$(ACR_PASSWORD)"
+
+          # 3) App settings (porta + DB + profile)
+          - task: AzureCLI@2
+            displayName: 'Aplicar App Settings (WEBSITES_PORT/DB/PROFILE)'
+            inputs:
+              azureSubscription: 'Azure-ServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az webapp config appsettings set \
+                  --name "$(WEBAPP_NAME)" \
+                  --resource-group "$(RESOURCE_GROUP)" \
+                  --settings \
+                    WEBSITES_PORT=8080 \
+                    SPRING_PROFILES_ACTIVE=azure \
+                    DB_URL="$(DB_URL)" \
+                    DB_USERNAME="$(DB_USERNAME)" \
+                    DB_PASSWORD="$(DB_PASSWORD)"
+
+          # 4) Habilitar logs do container (útil p/ troubleshooting)
+          - task: AzureCLI@2
+            displayName: 'Habilitar logs do container'
+            inputs:
+              azureSubscription: 'Azure-ServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az webapp log config \
+                  --name "$(WEBAPP_NAME)" \
+                  --resource-group "$(RESOURCE_GROUP)" \
+                  --docker-container-logging filesystem
+
+          # 5) Restart para aplicar tudo
+          - task: AzureCLI@2
+            displayName: 'Restart Web App'
+            inputs:
+              azureSubscription: 'Azure-ServiceConnection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az webapp restart \
+                  --name "$(WEBAPP_NAME)" \
+                  --resource-group "$(RESOURCE_GROUP)"
+
+          # 6) Health check simples (HTTP 200/302)
+          - task: Bash@3
+            displayName: 'Health Check HTTP'
+            inputs:
+              targetType: 'inline'
+              script: |
+                set -e
+                HOST=$(az webapp show --name "$(WEBAPP_NAME)" --resource-group "$(RESOURCE_GROUP)" --query "defaultHostName" -o tsv)
+                echo "Testando https://$HOST ..."
+                for i in {1..20}; do
+                  CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://$HOST/actuator/health" || true)
+                  if [ "$CODE" = "200" ] || [ "$CODE" = "302" ]; then
+                    echo "OK: $CODE"
+                    exit 0
+                  fi
+                  echo "Aguardando (tentativa $i)... status=$CODE"
+                  sleep 5
+                done
+                echo "Falha no health check."
+                exit 1
