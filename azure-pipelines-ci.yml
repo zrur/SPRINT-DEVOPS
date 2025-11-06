@@ -1,99 +1,118 @@
-# azure-pipelines-cd.yml (VERSÃO SIMPLIFICADA)
+# Azure DevOps - Pipeline CI
+# Build + Testes + Docker Build + Push para ACR
 
-trigger: none
-
-resources:
-  pipelines:
-    - pipeline: CI
-      source: 'mottooth-ci'
-      trigger:
-        branches:
-          include:
-            - sprint-4-devops
+trigger:
+  branches:
+    include:
+      - sprint-4-devops
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
   - group: 'mottooth-variables'
+  - name: acrLoginServer
+    value: 'mottoothacr558881.azurecr.io'
+  - name: imageName
+    value: 'mottooth'
+  - name: imageTag
+    value: '$(Build.BuildId)'
 
 stages:
-  - stage: Deploy
-    displayName: 'Deploy para Azure Web App'
+  - stage: Build
+    displayName: 'Build, Testes e Docker'
     jobs:
-      - job: DeployJob
-        displayName: 'Deploy Docker Container'
+      - job: BuildJob
+        displayName: 'Build e Deploy Docker'
         steps:
-          # 1. Download image info
-          - download: CI
-            artifact: image-info
-            displayName: 'Download Image Info'
+          # 1. Checkout
+          - checkout: self
+            displayName: 'Checkout código'
 
-          # 2. Ler image tag
+          # 2. Setup Java
+          - task: JavaToolInstaller@0
+            displayName: 'Instalar Java 21'
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          # 3. Build Maven
+          - task: Maven@3
+            displayName: 'Maven Clean Package'
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'clean package'
+              options: '-DskipTests=false'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+
+          # 4. Executar Testes
+          - task: Maven@3
+            displayName: 'Executar Testes'
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'test'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+
+          # 5. Publicar Testes
+          - task: PublishTestResults@2
+            displayName: 'Publicar Resultados Testes'
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              failTaskOnFailedTests: true
+
+          # 6. Publicar JAR
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar JAR'
+            inputs:
+              PathtoPublish: 'target/mottooth-0.0.1-SNAPSHOT.jar'
+              ArtifactName: 'mottooth-jar'
+
+          # 7. Build Docker Image
+          - task: Docker@2
+            displayName: 'Build Docker Image'
+            inputs:
+              command: 'build'
+              repository: '$(acrLoginServer)/$(imageName)'
+              dockerfile: 'Dockerfile'
+              tags: |
+                $(imageTag)
+                latest
+
+          # 8. Login no ACR
+          - task: Docker@2
+            displayName: 'Login ACR'
+            inputs:
+              command: 'login'
+              containerRegistry: 'mottoothacr'
+
+          # 9. Push para ACR
+          - task: Docker@2
+            displayName: 'Push Docker para ACR'
+            inputs:
+              command: 'push'
+              containerRegistry: 'mottoothacr'
+              repository: '$(imageName)'
+              tags: |
+                $(imageTag)
+                latest
+
+          # 10. Salvar image tag
           - bash: |
-              IMAGE_TAG=$(cat $(Pipeline.Workspace)/CI/image-info/image-tag.txt)
-              echo "Image a ser deployada: $IMAGE_TAG"
-              echo "##vso[task.setvariable variable=FULL_IMAGE]$IMAGE_TAG"
-            displayName: 'Ler Image Tag'
+              echo "$(acrLoginServer)/$(imageName):latest" > image-tag.txt
+              cat image-tag.txt
+            displayName: 'Gerar Image Tag'
 
-          # 3. Instalar Azure CLI (já vem instalado na VM)
-          - bash: |
-              az --version
-            displayName: 'Verificar Azure CLI'
-
-          # 4. Login no Azure com Service Principal OU credenciais
-          # TEMPORÁRIO: vamos usar az login interativo via browser
-          # Para produção, você precisa de um Service Principal
-
-          # 5. Configurar Web App para usar ACR
-          - bash: |
-              # Configurar container registry no Web App
-              az webapp config container set \
-                --name $(WEBAPP_NAME) \
-                --resource-group $(RESOURCE_GROUP) \
-                --docker-custom-image-name $(FULL_IMAGE) \
-                --docker-registry-server-url https://mottoothacr558881.azurecr.io \
-                --docker-registry-server-user $(ACR_USERNAME) \
-                --docker-registry-server-password $(ACR_PASSWORD)
-              
-              echo "✅ Container configurado!"
-            displayName: 'Configurar Container no Web App'
-            env:
-              AZURE_CONFIG_DIR: $(Agent.TempDirectory)/.azure
-
-          # 6. Restart Web App
-          - bash: |
-              az webapp restart \
-                --name $(WEBAPP_NAME) \
-                --resource-group $(RESOURCE_GROUP)
-              
-              echo "✅ Web App reiniciado!"
-              echo ""
-              echo "🌐 Aplicação disponível em:"
-              echo "https://$(WEBAPP_NAME).azurewebsites.net"
-            displayName: 'Restart Web App'
-            env:
-              AZURE_CONFIG_DIR: $(Agent.TempDirectory)/.azure
-
-          # 7. Verificar status
-          - bash: |
-              echo "Aguardando 30s para aplicação iniciar..."
-              sleep 30
-              
-              STATUS=$(az webapp show \
-                --name $(WEBAPP_NAME) \
-                --resource-group $(RESOURCE_GROUP) \
-                --query state \
-                --output tsv)
-              
-              echo "Status do Web App: $STATUS"
-              
-              if [ "$STATUS" == "Running" ]; then
-                echo "✅ Deploy concluído com sucesso!"
-              else
-                echo "⚠️ Web App não está Running. Verifique os logs."
-                exit 1
-              fi
-            displayName: 'Verificar Deploy'
-            env:
-              AZURE_CONFIG_DIR: $(Agent.TempDirectory)/.azure
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar Image Tag'
+            inputs:
+              PathtoPublish: 'image-tag.txt'
+              ArtifactName: 'image-info'
