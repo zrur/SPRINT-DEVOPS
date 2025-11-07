@@ -16,7 +16,6 @@ IF v_col_cnt = 0 THEN
     EXECUTE IMMEDIATE 'ALTER TABLE TB_PATIO ADD (ID_LOGRADOURO DECIMAL)';
 END IF;
 END;
-/
 -- Índice (melhora joins/buscas pela FK)
 DECLARE
 v_idx_cnt INTEGER;
@@ -31,7 +30,6 @@ IF v_idx_cnt = 0 THEN
     EXECUTE IMMEDIATE 'CREATE INDEX IDX_PATIO_LOGRADOURO ON TB_PATIO (ID_LOGRADOURO)';
 END IF;
 END;
-/
 -- FK (só cria se não existir e se a tabela de referência existir)
 DECLARE
 v_fk_cnt INTEGER;
@@ -59,5 +57,4 @@ IF v_fk_cnt = 0 THEN
 END IF;
 END IF;
 END;
-/
 COMMIT;

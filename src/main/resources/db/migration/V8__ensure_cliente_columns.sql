@@ -42,4 +42,3 @@ IF v_missing = 0 THEN
     add_col('ALTER TABLE TB_CLIENTE ADD (TELEFONE VARCHAR(20))');
 END IF;
 END;
-/
