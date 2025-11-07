@@ -1,25 +1,15 @@
 DECLARE
 v_col_cnt INTEGER;
+-- Adiciona a coluna DATA_REGISTRO se ela ainda não existir
+IF COL_LENGTH('TB_MOTO', 'DATA_REGISTRO') IS NULL
 BEGIN
-  -- só adiciona se ainda não existir
-SELECT COUNT(*) INTO v_col_cnt
-FROM ALL_TAB_COLUMNS
-WHERE OWNER = USER
-  AND TABLE_NAME = 'TB_MOTO'
-  AND COLUMN_NAME = 'DATA_REGISTRO';
+ALTER TABLE TB_MOTO
+    ADD DATA_REGISTRO DATETIME NOT NULL DEFAULT GETDATE();
+END
+GO
 
-IF v_col_cnt = 0 THEN
-    EXECUTE IMMEDIATE '
-      ALTER TABLE TB_MOTO
-      ADD (DATA_REGISTRO DATETIME DEFAULT GETDATE()TIME NOT NULL)
-    ';
-END IF;
-END;
-/
-
--- Preenche as linhas antigas que estejam nulas (por segurança)
+-- Atualiza linhas antigas (onde DATA_REGISTRO estiver nula)
 UPDATE TB_MOTO
-SET DATA_REGISTRO = GETDATE()TIME
+SET DATA_REGISTRO = GETDATE()
 WHERE DATA_REGISTRO IS NULL;
-
-COMMIT;
+GO
