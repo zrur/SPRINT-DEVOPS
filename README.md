@@ -1,168 +1,224 @@
-# 🏍️ Mottooth Tracking
 
-Link: https://mottooth-java-1.onrender.com
+#  Mottooth - Projeto Challenge 2TDSPW 2025
 
-Sistema inteligente para **rastreamento e gerenciamento de motocicletas** em pátios, utilizando **beacons Bluetooth Low Energy (BLE)**.  
-Desenvolvido como parte da disciplina **Java Advanced – 3ª Sprint (FIAP)**.
+<img width="1363" height="648" alt="image" src="https://github.com/user-attachments/assets/01d3d49e-acc3-4b57-89e8-50956a66d1b1" />
+<img width="1366" height="696" alt="image" src="https://github.com/user-attachments/assets/f6102f46-53f1-43fd-abe0-3c80e52d4970" />
 
----
 
-## 📸 Demonstração do Sistema (UI com Thymeleaf)
 
-### 🔹 Login
-![Login](./src/main/docs/screens/login.png)
-
-### 🔹 Página Inicial
-![Home](./src/main/docs/screens/index.png)
-
-### 🔹 Listagem de Motos
-![Motos](./src/main/docs/screens/listagensMotos.png)
-
-### 🔹 Listagem de Beacons
-![Motos](./src/main/docs/screens/listagensMotos.png)
-
-### 🔹 Pareamento de Moto ↔ Beacon
-![Parear](./src/main/docs/screens/Parear.png)
-
-### 🔹 Registro de Entrada/Saída
-![Movimentação](./src/main/docs/screens/entradaSaida.png)
----
-
-## ⚙️ Tecnologias Utilizadas
-
-- **Java 17**
-- **Spring Boot 3.2.3**
-- **Spring Data JPA**
-- **Spring Web (REST + Thymeleaf)**
-- **Thymeleaf** (frontend)
-- **Spring Security** (login, logout e controle de acesso)
-- **Spring Validation**
-- **Flyway** (versionamento do banco)
-- **Oracle Database** (produção)
-- **Lombok**
-- **Swagger / OpenAPI**
+Este repositório contém a aplicação **Mottooth**, desenvolvida como parte do **Challenge DevOps da FIAP (2º Semestre de 2025)**.  
+A aplicação foi criada utilizando **Spring Boot**, **Docker** e **Azure DevOps**, com **deploy automatizado** em um container na nuvem via **Azure Container Instances (ACI)**.
 
 ---
 
-## 📂 Estrutura do Projeto
+## ✅ Integrantes do Grupo
+
+| Nome | RM |
+|------|----|
+| Arthur [Seu sobrenome aqui] | RM558798 |
+| [Integrante 2] | RMxxxxxx |
+| [Integrante 3] | RMxxxxxx |
+| [Integrante 4] | RMxxxxxx |
+
+---
+
+## 🚀 Tecnologias Utilizadas
+
+- ☕ **Java 17 + Spring Boot**
+- 🧰 **Maven**
+- 🐳 **Docker**
+- 🗄️ **Azure Container Registry (ACR)**
+- ☁️ **Azure Container Instances (ACI)**
+- 🧩 **Azure SQL Database**
+- 🔁 **Azure DevOps Pipelines (CI/CD)**
+
+---
+
+## 🌐 Link da Aplicação em Produção
+
+> **URL:** [http://mottooth-app-arthur.brazilsouth.azurecontainer.io:8080/](http://mottooth-app-arthur.brazilsouth.azurecontainer.io:8080/)
+
+---
+
+## ⚙️ Pipeline DevOps
+
+### 🧱 CI (Integração Contínua)
+
+**Responsável por:**
+- Build do projeto com Maven  
+- Criação da imagem Docker  
+- Push da imagem para o ACR (`acrmottooth.azurecr.io`)
+
+---
+
+### 🚀 CD (Entrega Contínua)
+
+**Responsável por:**
+- Deploy da imagem para o **Azure Container Instance (ACI)**  
+- Utilizando **Azure CLI** diretamente no pipeline  
+
+---
+
+### 📸 Prints das Execuções
+
+#### ✅ CI Pipeline Sucesso:
+![CI pipeline]
+<img width="1097" height="252" alt="image" src="https://github.com/user-attachments/assets/1e4fb877-623d-466a-8814-ce979d10924b" />
+
+
+#### ✅ CD Pipeline Sucesso:
+![CD pipeline]
+<img width="717" height="499" alt="image" src="https://github.com/user-attachments/assets/488cc241-aea3-4a09-a900-60df102a9196" />
+
+
+---
+
+## 🐳 Docker
+
+### Dockerfile
+```dockerfile
+FROM openjdk:17
+COPY target/mottooth.jar mottooth.jar
+ENTRYPOINT ["java", "-jar", "mottooth.jar"]
+````
+
+---
+
+## 🗃️ Banco de Dados (Azure SQL)
+
+| Configuração | Valor                                          |
+| ------------ | ---------------------------------------------- |
+| **Servidor** | `mottooth-sql-1449.database.windows.net`       |
+| **Database** | `mottoothdb`                                   |
+| **Usuário**  | `adminmottooth`                                |
+| **Driver**   | `com.microsoft.sqlserver.jdbc.SQLServerDriver` |
+| **Dialect**  | `org.hibernate.dialect.SQLServerDialect`       |
+
+As credenciais foram configuradas como **variáveis seguras** no pipeline e no container.
+
+---
+
+## ☁️ Container
+
+### Azure Container Registry (ACR)
+
+| Propriedade      | Valor                                           |
+| ---------------- | ----------------------------------------------- |
+| **Nome**         | `acrmottooth`                                   |
+| **Login Server** | `acrmottooth.azurecr.io`                        |
+| **Imagem**       | `acrmottooth.azurecr.io/mottooth-app-devops:20` |
+
+### Azure Container Instance (ACI)
+
+| Propriedade           | Valor                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Nome do container** | `mottooth-app`                                                                                                                 |
+| **Grupo de recurso**  | `mottooth-devops`                                                                                                              |
+| **DNS público**       | [http://mottooth-app-arthur.brazilsouth.azurecontainer.io:8080](http://mottooth-app-arthur.brazilsouth.azurecontainer.io:8080) |
+
+---
+
+## 🔐 Variáveis de Ambiente
+
+Configuração no container via **Azure CLI**:
 
 ```bash
-mottooth-java/
-│── src/main/java/br/com/fiap/mottooth
-│   ├── config/            # Configurações (cache, segurança, swagger, etc.)
-│   ├── controller/        # Controladores REST + Thymeleaf (Auth, Moto, Beacon, Flow, etc.)
-│   ├── dto/               # Objetos de transferência de dados (DTOs)
-│   ├── exception/         # Tratamento centralizado de erros
-│   ├── model/             # Entidades JPA (Moto, Beacon, Usuario, Movimentacao, etc.)
-│   ├── repository/        # Repositórios Spring Data JPA
-│   ├── service/           # Regras de negócio e serviços
-│   └── MottoothApplication.java  # Classe principal
-│
-│── src/main/resources
-│   ├── db/migration/      # Scripts Flyway de versionamento
-│   ├── templates/         # Telas Thymeleaf (HTML)
-│   │   ├── motos/         # CRUD de motos
-│   │   ├── beacons/       # CRUD de beacons
-│   │   ├── flows/         # Parear beacon e movimentações
-│   │   └── fragments/     # Header, footer e menu
-│   └── application.properties
-│
-├── docs/screens/          # 📸 Imagens de demonstração usadas no README
+--environment-variables \
+  SPRING_DATASOURCE_URL='jdbc:sqlserver://mottooth-sql-1449.database.windows.net:1433;database=mottoothdb;encrypt=true;trustServerCertificate=false;' \
+  SPRING_DATASOURCE_USERNAME='adminmottooth' \
+  SPRING_DATASOURCE_DRIVER_CLASS_NAME='com.microsoft.sqlserver.jdbc.SQLServerDriver' \
+  SPRING_JPA_DATABASE_PLATFORM='org.hibernate.dialect.SQLServerDialect' \
+  SPRING_JPA_HIBERNATE_DDL_AUTO='update' \
+--secure-environment-variables \
+  SPRING_DATASOURCE_PASSWORD='Prs417272@'
+```
+
+---
+
+## 🧪 Teste da Aplicação
+
+1. Acesse a URL pública da aplicação.
+2. Verifique o funcionamento dos endpoints principais (`/`, `/health`, `/api/...`).
+3. Confirme no banco de dados a execução de inserções e consultas.
+
+---
+
+## 📄 Comandos Azure CLI Utilizados
+
+```bash
+# Criar resource group
+az group create --name mottooth-devops --location brazilsouth
+
+# Criar Container Registry
+az acr create --resource-group mottooth-devops --name acrmottooth --sku Basic --admin-enabled true
+
+# Obter credenciais do ACR
+az acr credential show --name acrmottooth
+
+# Push da imagem Docker
+docker tag mottooth-app-devops acrmottooth.azurecr.io/mottooth-app-devops:20
+docker push acrmottooth.azurecr.io/mottooth-app-devops:20
+
+# Criar container no ACI
+az container create \
+  --resource-group mottooth-devops \
+  --name mottooth-app \
+  --image acrmottooth.azurecr.io/mottooth-app-devops:20 \
+  --cpu 1 \
+  --memory 1.5 \
+  --registry-login-server acrmottooth.azurecr.io \
+  --registry-username acrmottooth \
+  --registry-password 'SENHA_ACR' \
+  --dns-name-label mottooth-app-arthur \
+  --ports 8080 \
+  --environment-variables \
+    SPRING_DATASOURCE_URL=... \
+    SPRING_DATASOURCE_USERNAME=... \
+  --secure-environment-variables \
+    SPRING_DATASOURCE_PASSWORD=...
+```
+
+---
+
+## 📦 Estrutura do Projeto
+
+```plaintext
+📦 mottooth
+├── 📁 src
+│   └── 📁 main
+│       ├── 📁 java
+│       │   └── br.com.fiap.mottooth
+│       └── 📁 resources
+│           ├── application.properties
+│           └── static/
+├── Dockerfile
 ├── pom.xml
+├── azure-pipelines.yml
 └── README.md
 ```
 
 ---
 
-## 📜 Recursos Implementados
+## ✅ Status Final
 
-- **CRUD de Motos** → Gerenciamento completo da frota.
-- **CRUD de Beacons** → Cadastro, edição e remoção de dispositivos BLE.
-- **CRUD de Localizações** → Registro histórico da posição das motos.
-- **Pareamento 1:1 Moto ↔ Beacon** → Associação exclusiva e validada.
-- **Registro de Movimentações (Entrada/Saída)** → Histórico detalhado com validação de duplicatas.
-- **Validação de Campos** → Bean Validation para consistência dos dados.
-- **Paginação e Ordenação** → Consultas em lotes, ordenadas.
-- **Busca por Parâmetros** → ID, placa, UUID e intervalos de tempo.
-- **Cache de Requisições** → Otimização de consultas frequentes.
-- **Tratamento Centralizado de Erros** → Respostas padronizadas de erro.
-- **DTOs** → Separação de entidades do banco e transferência de dados.
-- **Swagger / OpenAPI** → Documentação e testes via navegador.
-- **Spring Security** → Autenticação, login/logout e controle por papéis.
-- **Flyway** → Versionamento de tabelas e dados no banco Oracle.
+| Etapa                | Status      |
+| -------------------- | ----------- |
+| CI com Docker        | ✅ Concluído |
+| CD com deploy no ACI | ✅ Concluído |
+| Banco de Dados (SQL) | ✅ Conectado |
+| Acesso público       | ✅ Online    |
+| Documentação         | ✅ Completa  |
 
 ---
 
-## 🔗 Endpoints da API
+## 💡 Conclusão
 
-### 🚗 Motos
-- `GET /api/motos` → Lista todas as motos
-- `GET /api/motos/{id}` → Busca moto pelo ID
-- `GET /api/motos/placa/{placa}` → Busca moto pela placa
-- `POST /api/motos` → Cadastra nova moto
-- `PUT /api/motos/{id}` → Atualiza moto existente
-- `DELETE /api/motos/{id}` → Remove moto
+O projeto **Mottooth** demonstra o ciclo completo de **Integração e Entrega Contínua (CI/CD)**, desde o build automatizado com Docker até o deploy na nuvem via Azure, garantindo uma entrega confiável e escalável.
+Este desafio reforça as práticas de **DevOps** aplicadas a um ambiente real, com uso de ferramentas profissionais e pipelines eficientes.
 
-### 📡 Beacons
-- `GET /api/beacons` → Lista todos os beacons
-- `GET /api/beacons/{id}` → Busca beacon pelo ID
-- `GET /api/beacons/uuid/{uuid}` → Busca beacon pelo UUID
-- `POST /api/beacons` → Cadastra novo beacon
-- `PUT /api/beacons/{id}` → Atualiza beacon existente
-- `DELETE /api/beacons/{id}` → Remove beacon
-
-### 📍 Localizações
-- `GET /api/localizacoes` → Lista todas as localizações
-- `GET /api/localizacoes/{id}` → Busca localização pelo ID
-- `GET /api/localizacoes/moto/{motoId}/ultima` → Última localização de uma moto
-- `POST /api/localizacoes` → Registra nova localização
-- `PUT /api/localizacoes/{id}` → Atualiza localização existente
-- `DELETE /api/localizacoes/{id}` → Remove localização
+```
 
 ---
 
-## ▶️ Como Executar o Projeto
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/mottooth-java.git
-   cd mottooth-java
-   ```
-
-2. Configure o banco Oracle no `application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:oracle:thin:@localhost:1521:xe
-   spring.datasource.username=mottooth
-   spring.datasource.password=senha
-   spring.jpa.database-platform=org.hibernate.dialect.OracleDialect
-   ```
-
-3. Rode as migrações com Flyway automaticamente ao iniciar o projeto.
-
-4. Compile e rode a aplicação:
-   ```bash
-   mvn spring-boot:run
-   ```
-
-5. Acesse no navegador:
-    - **UI (Thymeleaf):** [http://localhost:8080](http://localhost:8080)
-    - **Swagger API Docs:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-
----
-
-## 🧪 Como Testar
-
-- **Testar CRUD via UI (Thymeleaf)** → Cadastrar, editar e excluir motos/beacons.
-- **Testar API (Swagger ou Postman)** → Executar chamadas REST listadas acima.
-- **Autenticação (Spring Security)** → Login/logout, com papéis diferentes de usuário.
-- **Validações** → Tentar inserir dados inválidos (placa duplicada, beacon repetido).
-- **Movimentações** → Registrar entrada/saída e verificar histórico.
-- **Flyway** → Conferir se as tabelas foram criadas e versionadas no Oracle.
-
----
-
-## 👥 Equipe
-
-- **Arthur Ramos dos Santos** – RM558798
-- **Felipe Melo de Sousa** – RM556099
-- **Robert Daniel da Silva Coimbra** – RM555881  
+Deseja que eu **adicione os prints das execuções e o pipeline YAML** formatado em código Markdown dentro do mesmo README (como anexo técnico no final)? Isso deixaria o arquivo completo para entrega.
+```
