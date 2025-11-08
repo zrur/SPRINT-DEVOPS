@@ -12,9 +12,9 @@ pool:
 variables:
   - group: 'mottooth-variables'
   - name: acrLoginServer
-    value: 'mottoothacr558881.azurecr.io'
+    value: 'acrmottooth.azurecr.io'  # ✅ CORRIGIDO
   - name: imageName
-    value: 'mottooth'
+    value: 'mottooth-app-devops'     # ✅ CORRIGIDO
   - name: imageTag
     value: '$(Build.BuildId)'
 
@@ -92,14 +92,14 @@ stages:
             displayName: 'Login ACR'
             inputs:
               command: 'login'
-              containerRegistry: 'mottoothacr'
+              containerRegistry: 'acrmottooth-connection'  # ✅ Nome da Service Connection
 
           # 9. Push para ACR
           - task: Docker@2
             displayName: 'Push Docker para ACR'
             inputs:
               command: 'push'
-              containerRegistry: 'mottoothacr'
+              containerRegistry: 'acrmottooth-connection'  # ✅ Nome da Service Connection
               repository: '$(imageName)'
               tags: |
                 $(imageTag)
