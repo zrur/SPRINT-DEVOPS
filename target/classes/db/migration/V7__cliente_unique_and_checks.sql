@@ -1,32 +1,22 @@
--- Normaliza emails existentes (lower + trim)
-UPDATE TB_CLIENTE
-SET EMAIL = LOWER(TRIM(EMAIL))
-WHERE EMAIL IS NOT NULL;
+-- V7__cliente_unique_and_checks.sql
 
--- Remove índice único criado na V6 (se existir) para não duplicar com a constraint
-DECLARE
-e_missing EXCEPTION;
-  PRAGMA EXCEPTION_INIT(e_missing, -1418); -- índice inexistente
-  e_noobj EXCEPTION;
-  PRAGMA EXCEPTION_INIT(e_noobj, -942);    -- objeto não existe
+-- Verifica se índice já existe
+IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_CLIENTE_CPF' AND object_id = OBJECT_ID('TB_CLIENTE'))
 BEGIN
-EXECUTE IMMEDIATE 'DROP INDEX UX_CLIENTE_EMAIL';
-EXCEPTION
-  WHEN e_missing THEN NULL;
-WHEN e_noobj   THEN NULL;
+DROP INDEX UQ_CLIENTE_CPF ON TB_CLIENTE;
 END;
-/
 
--- Unicidades
-ALTER TABLE TB_CLIENTE ADD CONSTRAINT UQ_CLIENTE_CPF   UNIQUE (CPF)   DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE TB_CLIENTE ADD CONSTRAINT UQ_CLIENTE_EMAIL UNIQUE (EMAIL) DEFERRABLE INITIALLY IMMEDIATE;
-
--- Checks de formato (não bloqueiam nulos)
-ALTER TABLE TB_CLIENTE ADD CONSTRAINT CHK_CLIENTE_CPF_FMT
-    CHECK (CPF IS NULL OR REGEXP_LIKE(CPF, '^[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}$'));
-
-ALTER TABLE TB_CLIENTE ADD CONSTRAINT CHK_CLIENTE_EMAIL_FMT
-    CHECK (EMAIL IS NULL OR REGEXP_LIKE(EMAIL, '^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$'));
-
-ALTER TABLE TB_CLIENTE ADD CONSTRAINT CHK_CLIENTE_TEL_FMT
-    CHECK (TELEFONE IS NULL OR REGEXP_LIKE(TELEFONE, '^[0-9]{10,13}$'));
+-- Tenta criar o índice, mas apenas se não houver duplicados ou NULLs
+IF NOT EXISTS (
+    SELECT CPF
+    FROM TB_CLIENTE
+    GROUP BY CPF
+    HAVING COUNT(*) > 1 OR CPF IS NULL
+)
+BEGIN
+CREATE UNIQUE INDEX UQ_CLIENTE_CPF ON TB_CLIENTE (CPF);
+END
+ELSE
+BEGIN
+    PRINT 'Não foi possível criar índice único em CPF: há NULLs ou CPFs duplicados na tabela TB_CLIENTE.';
+END;

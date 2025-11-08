@@ -1,18 +1,13 @@
-
--- View: beacons pareados a motos
-IF OBJECT_ID('VW_BEACONS_PAREADOS', 'V') IS NOT NULL
-    DROP VIEW VW_BEACONS_PAREADOS;
-GO
-CREATE VIEW VW_BEACONS_PAREADOS AS
-SELECT b.ID_BEACON, b.UUID, b.BATERIA, m.ID_MOTO, m.PLACA, b.ID_MODELO_BEACON
-FROM TB_BEACON b
-JOIN TB_MOTO m ON m.ID_MOTO = b.ID_MOTO;
-GO
+------------------------------------------------------------
+-- V14__views_beacons_localizacao.sql
+-- Criação de views: beacons disponíveis e última localização
+------------------------------------------------------------
 
 -- View: beacons disponíveis (sem moto)
 IF OBJECT_ID('VW_BEACONS_DISPONIVEIS', 'V') IS NOT NULL
     DROP VIEW VW_BEACONS_DISPONIVEIS;
 GO
+
 CREATE VIEW VW_BEACONS_DISPONIVEIS AS
 SELECT b.ID_BEACON, b.UUID, b.BATERIA, b.ID_MODELO_BEACON
 FROM TB_BEACON b
@@ -23,6 +18,7 @@ GO
 IF OBJECT_ID('VW_MOTOS_ULTIMA_LOCALIZACAO', 'V') IS NOT NULL
     DROP VIEW VW_MOTOS_ULTIMA_LOCALIZACAO;
 GO
+
 CREATE VIEW VW_MOTOS_ULTIMA_LOCALIZACAO AS
 SELECT x.ID_MOTO, x.PLACA, x.POSICAO_X, x.POSICAO_Y, x.DATA_HORA, x.PATIO
 FROM (

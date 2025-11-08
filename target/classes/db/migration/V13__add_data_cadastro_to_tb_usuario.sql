@@ -4,4 +4,4 @@
 ------------------------------------------------------------
 
 ALTER TABLE TB_USUARIO
-    ADD DATA_CADASTRO TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+    ADD DATA_CADASTRO DATETIME DEFAULT GETDATE();

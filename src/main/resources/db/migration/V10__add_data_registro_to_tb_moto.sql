@@ -1,15 +1,18 @@
-DECLARE
-v_col_cnt INTEGER;
--- Adiciona a coluna DATA_REGISTRO se ela ainda não existir
+-- Verifica se a coluna DATA_REGISTRO existe e adiciona se não existir
 IF COL_LENGTH('TB_MOTO', 'DATA_REGISTRO') IS NULL
     BEGIN
         ALTER TABLE TB_MOTO
-            ADD DATA_REGISTRO DATETIME NOT NULL DEFAULT GETDATE();
+            ADD DATA_REGISTRO DATETIME NULL;
     END
 GO
 
--- Atualiza linhas antigas (onde DATA_REGISTRO estiver nula)
+-- Atualiza valores nulos existentes
 UPDATE TB_MOTO
 SET DATA_REGISTRO = GETDATE()
 WHERE DATA_REGISTRO IS NULL;
+GO
+
+-- Altera para NOT NULL após preencher as linhas existentes
+ALTER TABLE TB_MOTO
+    ALTER COLUMN DATA_REGISTRO DATETIME NOT NULL;
 GO
