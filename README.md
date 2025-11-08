@@ -11,10 +11,10 @@ A aplicação foi criada utilizando **Spring Boot**, **Docker** e **Azure DevOps
 
 ---
 🧠 Descrição da Solução
-
+-
 O Mottooth é um sistema inteligente para rastreamento e gerenciamento de motocicletas em pátios, utilizando tecnologia Bluetooth Low Energy (BLE) por meio de beacons.
 A solução foi desenvolvida para permitir que administradores acompanhem, em tempo real, a localização e o status de cada motocicleta cadastrada, otimizando o controle de entrada, saída e permanência nos pátios.
-
+-
 A aplicação backend foi construída com Spring Boot (Java 17), integrando-se a um banco de dados Azure SQL e executando dentro de containers Docker, publicados no Azure Container Registry (ACR) e implantados automaticamente em Azure Container Instances (ACI) via Azure DevOps Pipelines (CI/CD).
 ---
 
