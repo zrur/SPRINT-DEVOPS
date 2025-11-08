@@ -15,10 +15,10 @@ A aplicação foi criada utilizando **Spring Boot**, **Docker** e **Azure DevOps
 
 | Nome | RM |
 |------|----|
-| Arthur [Seu sobrenome aqui] | RM558798 |
-| [Integrante 2] | RMxxxxxx |
-| [Integrante 3] | RMxxxxxx |
-| [Integrante 4] | RMxxxxxx |
+| [Arthur Ramos Dos Santos] | RM558798 |
+| [Felipe Melo de Sousa] | RM556099 |
+| [Robert Daniel da Silva Coimbra] | RM555881 |
+
 
 ---
 
