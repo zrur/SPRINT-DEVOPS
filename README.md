@@ -10,6 +10,13 @@ Este repositório contém a aplicação **Mottooth**, desenvolvida como parte do
 A aplicação foi criada utilizando **Spring Boot**, **Docker** e **Azure DevOps**, com **deploy automatizado** em um container na nuvem via **Azure Container Instances (ACI)**.
 
 ---
+🧠 Descrição da Solução
+
+O Mottooth é um sistema inteligente para rastreamento e gerenciamento de motocicletas em pátios, utilizando tecnologia Bluetooth Low Energy (BLE) por meio de beacons.
+A solução foi desenvolvida para permitir que administradores acompanhem, em tempo real, a localização e o status de cada motocicleta cadastrada, otimizando o controle de entrada, saída e permanência nos pátios.
+
+A aplicação backend foi construída com Spring Boot (Java 17), integrando-se a um banco de dados Azure SQL e executando dentro de containers Docker, publicados no Azure Container Registry (ACR) e implantados automaticamente em Azure Container Instances (ACI) via Azure DevOps Pipelines (CI/CD).
+---
 
 ## ✅ Integrantes do Grupo
 
@@ -211,14 +218,6 @@ az container create \
 
 ---
 
-## 💡 Conclusão
 
-O projeto **Mottooth** demonstra o ciclo completo de **Integração e Entrega Contínua (CI/CD)**, desde o build automatizado com Docker até o deploy na nuvem via Azure, garantindo uma entrega confiável e escalável.
-Este desafio reforça as práticas de **DevOps** aplicadas a um ambiente real, com uso de ferramentas profissionais e pipelines eficientes.
-
-```
 
 ---
-
-Deseja que eu **adicione os prints das execuções e o pipeline YAML** formatado em código Markdown dentro do mesmo README (como anexo técnico no final)? Isso deixaria o arquivo completo para entrega.
-```
